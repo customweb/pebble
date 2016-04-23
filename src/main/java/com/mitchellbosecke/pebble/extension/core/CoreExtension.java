@@ -8,55 +8,15 @@
  ******************************************************************************/
 package com.mitchellbosecke.pebble.extension.core;
 
+import com.mitchellbosecke.pebble.extension.*;
+import com.mitchellbosecke.pebble.node.expression.*;
+import com.mitchellbosecke.pebble.operator.*;
+import com.mitchellbosecke.pebble.tokenParser.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.mitchellbosecke.pebble.extension.AbstractExtension;
-import com.mitchellbosecke.pebble.extension.Filter;
-import com.mitchellbosecke.pebble.extension.Function;
-import com.mitchellbosecke.pebble.extension.NodeVisitorFactory;
-import com.mitchellbosecke.pebble.extension.Test;
-import com.mitchellbosecke.pebble.node.expression.AddExpression;
-import com.mitchellbosecke.pebble.node.expression.AndExpression;
-import com.mitchellbosecke.pebble.node.expression.ConcatenateExpression;
-import com.mitchellbosecke.pebble.node.expression.ContainsExpression;
-import com.mitchellbosecke.pebble.node.expression.DivideExpression;
-import com.mitchellbosecke.pebble.node.expression.EqualsExpression;
-import com.mitchellbosecke.pebble.node.expression.FilterExpression;
-import com.mitchellbosecke.pebble.node.expression.GreaterThanEqualsExpression;
-import com.mitchellbosecke.pebble.node.expression.GreaterThanExpression;
-import com.mitchellbosecke.pebble.node.expression.LessThanEqualsExpression;
-import com.mitchellbosecke.pebble.node.expression.LessThanExpression;
-import com.mitchellbosecke.pebble.node.expression.ModulusExpression;
-import com.mitchellbosecke.pebble.node.expression.MultiplyExpression;
-import com.mitchellbosecke.pebble.node.expression.NegativeTestExpression;
-import com.mitchellbosecke.pebble.node.expression.NotEqualsExpression;
-import com.mitchellbosecke.pebble.node.expression.OrExpression;
-import com.mitchellbosecke.pebble.node.expression.PositiveTestExpression;
-import com.mitchellbosecke.pebble.node.expression.RangeExpression;
-import com.mitchellbosecke.pebble.node.expression.SubtractExpression;
-import com.mitchellbosecke.pebble.node.expression.UnaryMinusExpression;
-import com.mitchellbosecke.pebble.node.expression.UnaryNotExpression;
-import com.mitchellbosecke.pebble.node.expression.UnaryPlusExpression;
-import com.mitchellbosecke.pebble.operator.Associativity;
-import com.mitchellbosecke.pebble.operator.BinaryOperator;
-import com.mitchellbosecke.pebble.operator.BinaryOperatorImpl;
-import com.mitchellbosecke.pebble.operator.UnaryOperator;
-import com.mitchellbosecke.pebble.operator.UnaryOperatorImpl;
-import com.mitchellbosecke.pebble.tokenParser.BlockTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.ExtendsTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.FilterTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.FlushTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.ForTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.IfTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.ImportTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.IncludeTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.MacroTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.ParallelTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.SetTokenParser;
-import com.mitchellbosecke.pebble.tokenParser.TokenParser;
 
 public class CoreExtension extends AbstractExtension {
 
@@ -74,6 +34,7 @@ public class CoreExtension extends AbstractExtension {
         parsers.add(new MacroTokenParser());
         parsers.add(new ParallelTokenParser());
         parsers.add(new SetTokenParser());
+        parsers.add(new CacheTokenParser());
 
         // verbatim tag is implemented directly in the LexerImpl
         return parsers;
@@ -137,6 +98,7 @@ public class CoreExtension extends AbstractExtension {
         filters.put("urlencode", new UrlEncoderFilter());
         filters.put("length", new LengthFilter());
         filters.put(ReplaceFilter.FILTER_NAME, new ReplaceFilter());
+        filters.put(MergeFilter.FILTER_NAME, new MergeFilter());
         return filters;
     }
 
@@ -174,6 +136,7 @@ public class CoreExtension extends AbstractExtension {
         return null;
     }
 
+    @Override
     public List<NodeVisitorFactory> getNodeVisitors() {
         List<NodeVisitorFactory> visitors = new ArrayList<>();
         visitors.add(new MacroAndBlockRegistrantNodeVisitorFactory());

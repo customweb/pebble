@@ -1,6 +1,6 @@
 #Pebble
 
-Pebble is a java templating engine inspired by [Twig](http://twig.sensiolabs.org/). It's biggest feature is template inheritance which enables multiple templates to easily share common code. For more information please visit the [official website](http://www.mitchellbosecke.com/pebble).
+Pebble is a java templating engine inspired by [Twig](http://twig.sensiolabs.org/). Its biggest feature is template inheritance which enables multiple templates to easily share common code. For more information please visit the [official website](http://www.mitchellbosecke.com/pebble).
 
 ## Basic Usage
 For more information on installation and configuration, see [the installation guide](http://www.mitchellbosecke.com/pebble/documentation/guide/installation).
@@ -11,7 +11,7 @@ First, add the following dependency to your pom.xml:
 <dependency>
 	<groupId>com.mitchellbosecke</groupId>
 	<artifactId>pebble</artifactId>
-	<version> 1.6.0 </version>
+	<version>2.2.1</version>
 </dependency>
 ```
 
@@ -48,7 +48,7 @@ Then create a template that extends base.html, call it "home.html":
 ```
 Now we want to compile the template, and render it:
 ```JAVA
-PebbleEngine engine = new PebbleEngine();
+PebbleEngine engine = new PebbleEngine.Builder().build();
 PebbleTemplate compiledTemplate = engine.getTemplate("home.html");
 
 Map<String, Object> context = new HashMap<>();
@@ -121,4 +121,4 @@ Currently looking for contributors! In particular we need help with new feature 
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-![Continuous Integration](https://travis-ci.org/mbosecke/pebble.svg?branch=master)
+![Continuous Integration](https://api.travis-ci.org/PebbleTemplates/pebble.svg?branch=master)

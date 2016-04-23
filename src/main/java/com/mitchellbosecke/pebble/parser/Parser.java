@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of Pebble.
- * 
+ * <p>
  * Copyright (c) 2014 by Mitchell Bösecke
- * 
+ * <p>
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
@@ -22,7 +22,7 @@ public interface Parser {
     /**
      * Provides the stream of tokens which ultimately need to be "parsed" into
      * Nodes.
-     * 
+     *
      * @return TokenStream
      */
     TokenStream getStream();
@@ -30,7 +30,7 @@ public interface Parser {
     /**
      * Parses the existing TokenStream, starting at the current Token, and
      * ending when the stopCondition is fullfilled.
-     * 
+     *
      * @param stopCondition The condition to stop parsing a segment of the template.
      * @return A node representing the parsed section
      * @throws ParserException Thrown if a parsing error occurs.

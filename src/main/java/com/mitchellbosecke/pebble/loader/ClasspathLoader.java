@@ -1,20 +1,19 @@
 /*******************************************************************************
  * This file is part of Pebble.
- *
+ * <p>
  * Copyright (c) 2014 by Mitchell Bösecke
- *
+ * <p>
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
 package com.mitchellbosecke.pebble.loader;
 
-import java.io.*;
-
+import com.mitchellbosecke.pebble.error.LoaderException;
+import com.mitchellbosecke.pebble.utils.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mitchellbosecke.pebble.error.LoaderException;
-import com.mitchellbosecke.pebble.utils.PathUtils;
+import java.io.*;
 
 /**
  * Uses a classloader to find templates located on the classpath.
@@ -31,6 +30,8 @@ public class ClasspathLoader implements Loader<String> {
     private String suffix;
 
     private String charset = "UTF-8";
+
+    private char expectedSeparator = '/';
 
     private final ClassLoader rcl;
 
@@ -50,21 +51,22 @@ public class ClasspathLoader implements Loader<String> {
 
         InputStream is = null;
 
-        // append the prefix and make sure prefix ends with a separator
-        // character
-        StringBuilder path = new StringBuilder("");
+        // append the prefix and make sure prefix ends with a separator character
+        StringBuilder path = new StringBuilder(128);
         if (getPrefix() != null) {
 
             path.append(getPrefix());
 
             // we do NOT use OS dependent separators here; getResourceAsStream
             // explicitly requires forward slashes.
-            if (!getPrefix().endsWith("/")) {
-                path.append("/");
+            if (!getPrefix().endsWith(Character.toString(expectedSeparator))) {
+                path.append(expectedSeparator);
             }
         }
-
-        String location = path.toString() + templateName + (getSuffix() == null ? "" : getSuffix());
+        path.append(templateName);
+        if (getSuffix() != null)
+            path.append(getSuffix());
+        String location = path.toString();
         logger.debug("Looking for template in {}.", location);
 
         // perform the lookup
@@ -112,11 +114,11 @@ public class ClasspathLoader implements Loader<String> {
 
     @Override
     public String resolveRelativePath(String relativePath, String anchorPath) {
-        return PathUtils.resolveRelativePath(relativePath, anchorPath);
+        return PathUtils.resolveRelativePath(relativePath, anchorPath, expectedSeparator);
     }
 
     @Override
     public String createCacheKey(String templateName) {
-       return templateName;
+        return templateName;
     }
 }

@@ -1,3 +1,62 @@
+## v2.2.1 (2018-03-28)
+- **Security Fix**: Pebble was only escaping Strings; now it escapes the toString() output of all objects
+- [Official spring4 extension](https://github.com/PebbleTemplates/pebble-spring4)
+- [Official spring boot starter](https://github.com/PebbleTemplates/pebble-spring-boot-starter)
+- Bug fix: ConcurrentModificationException when importing macros in nested parallel blocks
+- Bug fix: Exceptions in parallel blocks were being swallowed
+- Bug fix: Obtaining a dynamic attribute of a variable was being incorrectly cached
+- Improved error reporting
+
+
+## v2.2.0 (2016-03-06)
+- Added "merge" filter
+- Add support for strings to the "contains" operator
+- Bug fix: Couldn't invoke methods that had boolean arguments
+- Bug fix: Unexpected results when comparing the outputs of the "raw" filter
+
+## v2.1.0 (2016-01-31)
+- Added method in PebbleEngine.Builder class to completely disable cache
+- Improved error message with malformed ternary expression
+- Bug fix: NPE when calling bean method will null argument
+- Bug fix: relative paths were not platform agnostic
+- Bug fix: slice filter failed on integer argument
+- Bug fix: Pebble didn't work on GAE due to a restricted class in the JRE
+- **Backwards incompatibility: Removed method on PebbleEngine.Builder to register a filter as safe and not requiring escaping.
+The filter should return an instance of SafeString instead.**
+- **Backwards incompatibility: Functions are now escaped unless they return instance of SafeString**
+
+### pebble-spring3
+* Spring beans are available in the evaluation context by default
+* HTTP request is available in the evaluation context by default
+* HTTP session is available in the evaluation context by default
+
+
+## v2.0.0 (2015-12-13)
+- Support for relative template paths
+- Added a "cache" tag to cache portions of a template
+- String concatenation with "~" operator
+- Added two global variables into the context
+  - "locale": the current locale
+  - "template": reference to the actual template. Can be used to get the template name with {{ template.name }}
+- "Length" filter
+- "Replace" filter
+- Support for parallel template parsing
+- Additional loop variables: last, first, revindex
+- "equals" support for enums
+- Added a range function and ability to iterate over a range of characters/numbers
+- Added support for BigDecimals
+- Expressions are permitted within square bracket notation when accessing maps/arrays/lists
+- Better error handling with more informative exceptions
+- Ability to add extra variables to the context when "including" another template
+- Bug fix: "defined" test did not work as expected in strict mode
+- Bug fix: fixed broken "less than equal" comparison 
+- **Backwards incompatibility: "Included" templates run in their own dedicated scope and no longer affect the variables of the template that included it.**
+- **Backwards incompatibility: Constructor for PebbleEngine is now private, must use PebbleEngine.Builder**
+- **Backwards incompatibility: PebbleEngine is immutable once constructed**
+- **Backwards incompatibility: Removed "getExtension" method from PebbleEngine, core extensions must be configured during construction of the PebbleEngine object**
+- **Backwards incompatibility: Removed deprecated LocaleAware interface**
+- **Backwards incompatibility: Extensions are now expected to return NodeVisitorFactory objects instead of NodeVisitors**
+
 ## v1.6.0 (2015-09-06)
 - Support for custom escaping strategies
 - Support for calling bean methods with primitive argument types

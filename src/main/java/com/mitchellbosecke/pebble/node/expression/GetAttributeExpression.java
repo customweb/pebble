@@ -1,28 +1,18 @@
 /*******************************************************************************
  * This file is part of Pebble.
-<<<<<<< HEAD
+ * <<<<<<< HEAD
  * <p>
  * Copyright (c) 2014 by Mitchell Bösecke
  * <p>
-=======
- *
+ * =======
+ * <p>
  * Copyright (c) 2014 by Mitchell Bösecke
- *
->>>>>>> d6a41085fe86ce30f23d3b7929ad492343ff01b7
+ * <p>
+ * >>>>>>> d6a41085fe86ce30f23d3b7929ad492343ff01b7
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
 package com.mitchellbosecke.pebble.node.expression;
-
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.mitchellbosecke.pebble.error.AttributeNotFoundException;
 import com.mitchellbosecke.pebble.error.PebbleException;
@@ -33,13 +23,17 @@ import com.mitchellbosecke.pebble.node.PositionalArgumentNode;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
 
+import java.lang.reflect.*;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Used to get an attribute from an object. It will look up attributes in the
  * following order: map entry, array item, list item, get method, is method, has
  * method, public method, public field.
  *
  * @author Mitchell
- *
  */
 public class GetAttributeExpression implements Expression<Object> {
 
@@ -56,15 +50,15 @@ public class GetAttributeExpression implements Expression<Object> {
     /**
      * Potentially cached on first evaluation.
      */
-    private final ConcurrentHashMap<Class<?>, Member> memberCache;
+    private final ConcurrentHashMap<MemberCacheKey, Member> memberCache;
 
     public GetAttributeExpression(Expression<?> node, Expression<?> attributeNameExpression, String filename,
-            int lineNumber) {
+                                  int lineNumber) {
         this(node, attributeNameExpression, null, filename, lineNumber);
     }
 
     public GetAttributeExpression(Expression<?> node, Expression<?> attributeNameExpression, ArgumentsNode args,
-            String filename, int lineNumber) {
+                                  String filename, int lineNumber) {
 
         this.node = node;
         this.attributeNameExpression = attributeNameExpression;
@@ -89,7 +83,7 @@ public class GetAttributeExpression implements Expression<Object> {
 
         Object[] argumentValues = null;
 
-        Member member = object == null ? null : memberCache.get(object.getClass());
+        Member member = object == null ? null : memberCache.get(new MemberCacheKey(object.getClass(), attributeName));
 
         if (object != null && member == null) {
 
@@ -109,15 +103,39 @@ public class GetAttributeExpression implements Expression<Object> {
                     // then we check arrays
                     if (object.getClass().isArray()) {
                         int index = Integer.parseInt(attributeName);
+                        int length = Array.getLength(object);
+                        if (index < 0 || index >= length) {
+                            if (context.isStrictVariables()) {
+                                throw new AttributeNotFoundException(null,
+                                        "Index out of bounds while accessing array with strict variables on.",
+                                        attributeName, lineNumber, filename);
+                            } else {
+                                return null;
+                            }
+                        }
                         return Array.get(object, index);
                     }
 
                     // then lists
                     if (object instanceof List) {
-                        Integer key = Integer.valueOf(attributeName);
+
                         @SuppressWarnings("unchecked")
                         List<Object> list = (List<Object>) object;
-                        return list.get(key);
+
+                        int index = Integer.parseInt(attributeName);
+                        int length = list.size();
+
+                        if (index < 0 || index >= length) {
+                            if (context.isStrictVariables()) {
+                                throw new AttributeNotFoundException(null,
+                                        "Index out of bounds while accessing array with strict variables on.",
+                                        attributeName, lineNumber, filename);
+                            } else {
+                                return null;
+                            }
+                        }
+
+                        return list.get(index);
                     }
                 } catch (NumberFormatException ex) {
                     // do nothing
@@ -133,12 +151,17 @@ public class GetAttributeExpression implements Expression<Object> {
             Class<?>[] argumentTypes = new Class<?>[argumentValues.length];
 
             for (int i = 0; i < argumentValues.length; i++) {
-                argumentTypes[i] = argumentValues[i].getClass();
+                Object o = argumentValues[i];
+                if (o == null) {
+                    argumentTypes[i] = null;
+                } else {
+                    argumentTypes[i] = o.getClass();
+                }
             }
 
             member = reflect(object, attributeName, argumentTypes);
             if (member != null) {
-                memberCache.put(object.getClass(), member);
+                memberCache.put(new MemberCacheKey(object.getClass(), attributeName), member);
             }
 
         }
@@ -150,20 +173,21 @@ public class GetAttributeExpression implements Expression<Object> {
             result = invokeMember(object, member, argumentValues);
         } else if (context.isStrictVariables()) {
             if (object == null) {
-                final String rootPropertyName = ((ContextVariableExpression) node).getName();
 
-                throw new RootAttributeNotFoundException(
-                        null,
-                        String.format(
-                                "Root attribute [%s] does not exist or can not be accessed and strict variables is set to true.",
-                                rootPropertyName), rootPropertyName, this.lineNumber, this.filename);
+                if (node instanceof ContextVariableExpression) {
+                    final String rootPropertyName = ((ContextVariableExpression) node).getName();
+                    throw new RootAttributeNotFoundException(null, String.format(
+                            "Root attribute [%s] does not exist or can not be accessed and strict variables is set to true.",
+                            rootPropertyName), rootPropertyName, this.lineNumber, this.filename);
+                } else {
+                    throw new RootAttributeNotFoundException(null,
+                            "Attempt to get attribute of null object and strict variables is set to true.", attributeName, this.lineNumber, this.filename);
+                }
+
             } else {
-                throw new AttributeNotFoundException(
-                        null,
-                        String.format(
-                                "Attribute [%s] of [%s] does not exist or can not be accessed and strict variables is set to true.",
-                                attributeName, object.getClass().getName()), attributeName, this.lineNumber,
-                        this.filename);
+                throw new AttributeNotFoundException(null, String.format(
+                        "Attribute [%s] of [%s] does not exist or can not be accessed and strict variables is set to true.",
+                        attributeName, object.getClass().getName()), attributeName, this.lineNumber, this.filename);
             }
         }
         return result;
@@ -181,14 +205,12 @@ public class GetAttributeExpression implements Expression<Object> {
     private Object invokeMember(Object object, Member member, Object[] argumentValues) {
         Object result = null;
         try {
-            if (member != null) {
-
-                if (member instanceof Method) {
-                    result = ((Method) member).invoke(object, argumentValues);
-                } else if (member instanceof Field) {
-                    result = ((Field) member).get(object);
-                }
+            if (member instanceof Method) {
+                result = ((Method) member).invoke(object, argumentValues);
+            } else if (member instanceof Field) {
+                result = ((Field) member).get(object);
             }
+
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
@@ -301,7 +323,7 @@ public class GetAttributeExpression implements Expression<Object> {
 
             boolean compatibleTypes = true;
             for (int i = 0; i < types.length; i++) {
-                if (!widen(types[i]).isAssignableFrom(requiredTypes[i])) {
+                if (requiredTypes[i] != null && !widen(types[i]).isAssignableFrom(requiredTypes[i])) {
                     compatibleTypes = false;
                     break;
                 }
@@ -335,8 +357,39 @@ public class GetAttributeExpression implements Expression<Object> {
             result = Short.class;
         } else if (clazz == byte.class) {
             result = Byte.class;
+        } else if (clazz == boolean.class) {
+            result = Boolean.class;
         }
         return result;
+    }
+
+    private class MemberCacheKey {
+        private final Class<?> clazz;
+        private final String attributeName;
+
+        private MemberCacheKey(Class<?> clazz, String attributeName) {
+            this.clazz = clazz;
+            this.attributeName = attributeName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            MemberCacheKey that = (MemberCacheKey) o;
+
+            if (!clazz.equals(that.clazz)) return false;
+            return attributeName.equals(that.attributeName);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = clazz.hashCode();
+            result = 31 * result + attributeName.hashCode();
+            return result;
+        }
     }
 
     @Override

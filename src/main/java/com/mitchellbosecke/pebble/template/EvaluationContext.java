@@ -1,23 +1,21 @@
 /*******************************************************************************
  * This file is part of Pebble.
- *
+ * <p>
  * Copyright (c) 2014 by Mitchell Bösecke
- *
+ * <p>
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
 package com.mitchellbosecke.pebble.template;
 
+import com.google.common.cache.Cache;
+import com.mitchellbosecke.pebble.cache.BaseTagCacheKey;
+import com.mitchellbosecke.pebble.extension.ExtensionRegistry;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
-
-import com.mitchellbosecke.pebble.extension.Filter;
-import com.mitchellbosecke.pebble.extension.Function;
-import com.mitchellbosecke.pebble.extension.Test;
 
 /**
  * An evaluation context will store all stateful data that is necessary for the
@@ -25,7 +23,6 @@ import com.mitchellbosecke.pebble.extension.Test;
  * thread safety.
  *
  * @author Mitchell
- *
  */
 public class EvaluationContext {
 
@@ -36,12 +33,12 @@ public class EvaluationContext {
      * and other features; this inheritance chain will help the template keep
      * track of where in the inheritance chain it currently is.
      */
-    private final InheritanceChain inheritanceChain;
+    private final Hierarchy hierarchy;
 
     /**
      * A scope is a set of visible variables. A trivial template will only have
      * one scope. New scopes are added with for loops and macros for example.
-     *
+     * <p>
      * Most scopes will have a link to their parent scope which allow an
      * evaluation to look up the scope chain for variables. A macro is an
      * exception to this as it only has access to it's local variables.
@@ -49,25 +46,19 @@ public class EvaluationContext {
     private final ScopeChain scopeChain;
 
     /**
-     * The locale of this template. Will be used by LocaleAware filters,
-     * functions, etc.
+     * The locale of this template.
      */
     private final Locale locale;
 
     /**
-     * All the available filters for this template.
+     * All the available filters/tests/functions for this template.
      */
-    private final Map<String, Filter> filters;
+    private final ExtensionRegistry extensionRegistry;
 
     /**
-     * All the available tests for this template.
+     * The tag cache
      */
-    private final Map<String, Test> tests;
-
-    /**
-     * All the available functions for this template.
-     */
-    private final Map<String, Function> functions;
+    private final Cache<BaseTagCacheKey, Object> tagCache;
 
     /**
      * The user-provided ExecutorService (can be null).
@@ -77,192 +68,138 @@ public class EvaluationContext {
     /**
      * The imported templates are used to look up macros.
      */
-    private final List<PebbleTemplateImpl> importedTemplates = new ArrayList<>();
+    private final List<PebbleTemplateImpl> importedTemplates;
 
     /**
      * Constructor used to provide all final variables.
      *
-     * @param self
-     *            The template implementation
-     * @param strictVariables
-     *            Whether strict variables is to be used
-     * @param locale
-     *            The locale of the template
-     * @param filters
-     *            Available filters
-     * @param tests
-     *            Available tests
-     * @param functions
-     *            Available functions
-     * @param executorService
-     *            The optional executor service
-     * @param scopeChain
-     *            The scope chain
-     * @param inheritanceChain
-     *            The inheritance chain
+     * @param self              The template implementation
+     * @param strictVariables   Whether strict variables is to be used
+     * @param locale            The locale of the template
+     * @param extensionRegistry The extension registry
+     * @param executorService   The optional executor service
+     * @param scopeChain        The scope chain
+     * @param hierarchy         The inheritance chain
+     * @param tagCache          The cache used by the "cache" tag
      */
     public EvaluationContext(PebbleTemplateImpl self, boolean strictVariables, Locale locale,
-            Map<String, Filter> filters, Map<String, Test> tests, Map<String, Function> functions,
-            ExecutorService executorService, ScopeChain scopeChain, InheritanceChain inheritanceChain) {
+                             ExtensionRegistry extensionRegistry, Cache<BaseTagCacheKey, Object> tagCache,
+                             ExecutorService executorService, List<PebbleTemplateImpl> importedTemplates, ScopeChain scopeChain,
+                             Hierarchy hierarchy) {
 
-        if (inheritanceChain == null) {
-            inheritanceChain = new InheritanceChain(self);
+        if (hierarchy == null) {
+            hierarchy = new Hierarchy(self);
         }
 
         this.strictVariables = strictVariables;
         this.locale = locale;
-        this.filters = filters;
-        this.tests = tests;
-        this.functions = functions;
+        this.extensionRegistry = extensionRegistry;
+        this.tagCache = tagCache;
         this.executorService = executorService;
+        this.importedTemplates = importedTemplates;
         this.scopeChain = scopeChain;
-        this.inheritanceChain = inheritanceChain;
+        this.hierarchy = hierarchy;
     }
 
     /**
      * Makes an exact copy of the evaluation context EXCEPT for the inheritance
      * chain. This is necessary for the "include" tag.
      *
-     * @param self
-     *            The template implementation
+     * @param self The template implementation
      * @return A copy of the evaluation context
      */
     public EvaluationContext shallowCopyWithoutInheritanceChain(PebbleTemplateImpl self) {
-        EvaluationContext result = new EvaluationContext(self, strictVariables, locale, filters, tests, functions,
-                executorService, scopeChain, null);
+        EvaluationContext result = new EvaluationContext(self, strictVariables, locale, extensionRegistry, tagCache,
+                executorService, importedTemplates, scopeChain, null);
         return result;
     }
 
     /**
-     * Makes an exact copy of the evaluation context except the "scopeChain"
-     * object will be a deep copy without reference to the original. This is
-     * used for the "parallel" tag.
+     * Makes a "snapshot" of the evaluation context. The scopeChain
+     * object will be a deep copy and the imported templates will be
+     * a new list. This is used for the "parallel" tag.
      *
-     * @param self
-     *            The template implementation
+     * @param self The template implementation
      * @return A copy of the evaluation context
      */
-    public EvaluationContext deepCopy(PebbleTemplateImpl self) {
-        EvaluationContext result = new EvaluationContext(self, strictVariables, locale, filters, tests, functions,
-                executorService, scopeChain.deepCopy(), inheritanceChain);
+    public EvaluationContext threadSafeCopy(PebbleTemplateImpl self) {
+        EvaluationContext result = new EvaluationContext(self, strictVariables, locale, extensionRegistry, tagCache,
+                executorService, new ArrayList<>(importedTemplates), scopeChain.deepCopy(), hierarchy);
         return result;
     }
 
     /**
-     * This method might be called DURING the evaluation of a template (ex. for
-     * node, set node, and macro node) and must be thread safe in case there are
-     * multiple threads evaluating the same template (via parallel tag).
+     * Returns whether or not this template is being evaluated in "strict templates" mode
      *
-     * @param key
-     *            Key
-     * @param value
-     *            Value
+     * @return Whether or not this template is being evaluated in "strict tempaltes" mode.
      */
-    public void put(String key, Object value) {
-        scopeChain.put(key, value);
-    }
-
-    /**
-     * Will look for a variable, traveling upwards through the scope chain until
-     * it is found.
-     *
-     * @param key
-     *            Key
-     * @return The object, if found
-     */
-    public Object get(String key) {
-        return scopeChain.get(key);
-    }
-
-    /**
-     * Checks if the given key exists within the context.
-     *
-     * @param key
-     *            the key for which the check should be executed for.
-     * @return {@code true} when the key does exists or {@code false} when the
-     *         given key does not exists.
-     */
-    public boolean containsKey(String key) {
-        return scopeChain.containsKey(key);
-    }
-
-    public void ascendInheritanceChain() {
-        inheritanceChain.ascend();
-    }
-
-    public void descendInheritanceChain() {
-        inheritanceChain.descend();
-    }
-
-    public PebbleTemplateImpl getParentTemplate() {
-        return inheritanceChain.getParent();
-    }
-
-    public PebbleTemplateImpl getChildTemplate() {
-        return inheritanceChain.getChild();
-    }
-
-    /**
-     * Creates a new scope that contains a reference to the current scope.
-     */
-    public void pushScope() {
-        pushScope(new HashMap<String, Object>());
-    }
-
-    public void pushScope(Map<String, Object> map) {
-        scopeChain.pushScope(map);
-    }
-
-    public boolean currentScopeContainsVariable(String variableName) {
-        return scopeChain.currentScopeContainsVariable(variableName);
-    }
-
-    /**
-     * Pushes a new scope that doesn't contain a reference to the current scope.
-     * This occurs for macros. Variable lookup will end at this scope.
-     */
-    public void pushLocalScope() {
-        scopeChain.pushLocalScope();
-    }
-
-    public void popScope() {
-        scopeChain.popScope();
-    }
-
     public boolean isStrictVariables() {
         return strictVariables;
     }
 
+    /**
+     * Returns the locale
+     *
+     * @return The current locale
+     */
     public Locale getLocale() {
         return locale;
     }
 
-    public Map<String, Test> getTests() {
-        return tests;
+    /**
+     * Returns the extension registry used to access all of the tests/filters/functions
+     *
+     * @return The extension registry
+     */
+    public ExtensionRegistry getExtensionRegistry() {
+        return extensionRegistry;
     }
 
-    public Map<String, Filter> getFilters() {
-        return filters;
-    }
-
-    public Map<String, Function> getFunctions() {
-        return functions;
-    }
-
+    /**
+     * Returns the executor service if exists or null
+     *
+     * @return The executor service if exists, or null
+     */
     public ExecutorService getExecutorService() {
         return executorService;
     }
 
-    public void addImportedTemplate(PebbleTemplateImpl template) {
-        this.importedTemplates.add(template);
-    }
-
+    /**
+     * Returns a list of imported templates.
+     *
+     * @return A list of imported templates.
+     */
     public List<PebbleTemplateImpl> getImportedTemplates() {
         return this.importedTemplates;
     }
 
-    public void setParent(PebbleTemplateImpl parent) {
-        inheritanceChain.pushAncestor(parent);
+    /**
+     * Returns the cache used for the "cache" tag
+     *
+     * @return The cache used for the "cache" tag
+     */
+    public Cache<BaseTagCacheKey, Object> getTagCache() {
+        return tagCache;
+    }
+
+    /**
+     * Returns the scope chain data structure that allows variables to be added/removed from the current scope
+     * and retrieved from the nearest visible scopes.
+     *
+     * @return The scope chain.
+     */
+    public ScopeChain getScopeChain() {
+        return scopeChain;
+    }
+
+    /**
+     * Returns the data structure representing the entire hierarchy of
+     * the template currently being evaluated.
+     *
+     * @return The inheritance chain
+     */
+    public Hierarchy getHierarchy() {
+        return hierarchy;
     }
 
 }

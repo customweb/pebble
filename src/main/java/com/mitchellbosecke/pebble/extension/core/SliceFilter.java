@@ -1,20 +1,22 @@
 /*******************************************************************************
  * This file is part of Pebble.
- * 
+ *
  * Copyright (c) 2014 by Mitchell Bösecke
- * 
+ *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
 package com.mitchellbosecke.pebble.extension.core;
+
+import com.mitchellbosecke.pebble.error.PebbleException;
+import com.mitchellbosecke.pebble.extension.Filter;
+import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import com.mitchellbosecke.pebble.extension.Filter;
 
 public class SliceFilter implements Filter {
 
@@ -31,7 +33,7 @@ public class SliceFilter implements Filter {
     }
 
     @Override
-    public Object apply(Object input, Map<String, Object> args) {
+    public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) throws PebbleException {
 
         if (input == null) {
             return null;
@@ -43,11 +45,11 @@ public class SliceFilter implements Filter {
         if (argFrom == null) {
             // defaults to 0
             argFrom = Long.valueOf(0);
-        } else if (!(argFrom instanceof Long)) {
-            throw new IllegalArgumentException("Argument fromIndex must be a number. Actual type: "
-                    + (argFrom == null ? "null" : argFrom.getClass().getName()));
+        } else if (!(argFrom instanceof Number)) {
+            throw new PebbleException(null, "Argument fromIndex must be a number. Actual type: "
+                    + (argFrom == null ? "null" : argFrom.getClass().getName()), lineNumber, self.getName());
         }
-        int from = ((Long) argFrom).intValue();
+        int from = ((Number) argFrom).intValue();
         if (from < 0) {
             throw new IllegalArgumentException("fromIndex must be greater than 0");
         }
@@ -57,9 +59,9 @@ public class SliceFilter implements Filter {
         if (argTo == null) {
             // defaults to input length
             // argTo == null;
-        } else if (!(argTo instanceof Long)) {
-            throw new IllegalArgumentException("Argument toIndex must be a number. Actual type: "
-                    + (argTo == null ? "null" : argTo.getClass().getName()));
+        } else if (!(argTo instanceof Number)) {
+            throw new PebbleException(null, "Argument toIndex must be a number. Actual type: "
+                    + (argTo == null ? "null" : argTo.getClass().getName()), lineNumber, self.getName());
         }
 
         int length;
@@ -70,18 +72,18 @@ public class SliceFilter implements Filter {
         } else if (input instanceof String) {
             length = ((String) input).length();
         } else {
-            throw new IllegalArgumentException(
+            throw new PebbleException(null,
                     "Slice filter can only be applied to String, List and array inputs. Actual type was: "
-                            + input.getClass().getName());
+                            + input.getClass().getName(), lineNumber, self.getName());
         }
         int to;
 
         if (argTo != null) {
-            to = ((Long) argTo).intValue();
+            to = ((Number) argTo).intValue();
             if (to > length)
-                throw new IllegalArgumentException("toIndex must be smaller than input size: " + length);
+                throw new PebbleException(null, "toIndex must be smaller than input size: " + length, lineNumber, self.getName());
             else if (from >= to)
-                throw new IllegalArgumentException("toIndex must be greater than fromIndex");
+                throw new PebbleException(null, "toIndex must be greater than fromIndex", lineNumber, self.getName());
         } else {
             to = length;
         }

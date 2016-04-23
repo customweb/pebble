@@ -1,24 +1,23 @@
 /*******************************************************************************
  * This file is part of Pebble.
- * 
+ *
  * Copyright (c) 2014 by Mitchell Bösecke
- * 
+ *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
 package com.mitchellbosecke.pebble.extension.core;
 
+import com.mitchellbosecke.pebble.error.PebbleException;
+import com.mitchellbosecke.pebble.extension.Filter;
+import com.mitchellbosecke.pebble.extension.escaper.SafeString;
+import com.mitchellbosecke.pebble.template.EvaluationContext;
+import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import com.mitchellbosecke.pebble.extension.Filter;
-import com.mitchellbosecke.pebble.template.EvaluationContext;
+import java.util.*;
 
 public class DateFilter implements Filter {
 
@@ -35,7 +34,7 @@ public class DateFilter implements Filter {
     }
 
     @Override
-    public Object apply(Object input, Map<String, Object> args) {
+    public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) throws PebbleException {
         if (input == null) {
             return null;
         }
@@ -52,14 +51,15 @@ public class DateFilter implements Filter {
         if (args.get("existingFormat") != null) {
             existingFormat = new SimpleDateFormat((String) args.get("existingFormat"), locale);
             try {
-                date = existingFormat.parse((String) input);
+                date = existingFormat.parse(input.toString());
             } catch (ParseException e) {
-                throw new RuntimeException("Could not parse date", e);
+                throw new PebbleException(e, String.format("Could not parse the string '%1' into a date.",
+                        input.toString()), lineNumber, self.getName());
             }
         } else {
             date = (Date) input;
         }
 
-        return intendedFormat.format(date);
+        return new SafeString(intendedFormat.format(date));
     }
 }

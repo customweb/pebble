@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of Pebble.
- * 
+ *
  * Copyright (c) 2014 by Mitchell Bösecke
- * 
+ *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.mitchellbosecke.pebble.extension.Filter;
+import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
 
 public class RawFilter implements Filter {
 
@@ -19,12 +20,11 @@ public class RawFilter implements Filter {
         return null;
     }
 
-    public Object apply(Object inputObject, Map<String, Object> args) {
-        /*
-         * Doesn't actually do anything to the input. This filter's existence is
-         * enough for the EscaperNodeVisitor to know not to escape this
-         * expression.
-         */
+    @Override
+    public Object apply(Object inputObject, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) {
+        if(inputObject instanceof String){
+            return new SafeString((String) inputObject);
+        }
         return inputObject;
     }
 

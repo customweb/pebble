@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of Pebble.
- * 
+ * <p>
  * Copyright (c) 2014 by Mitchell Bösecke
- * 
+ * <p>
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
@@ -13,6 +13,7 @@ import com.mitchellbosecke.pebble.extension.NodeVisitor;
 import com.mitchellbosecke.pebble.node.expression.Expression;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+import com.mitchellbosecke.pebble.template.ScopeChain;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -21,9 +22,8 @@ import java.util.*;
 
 /**
  * Represents a "for" loop within the template.
- * 
- * @author mbosecke
  *
+ * @author mbosecke
  */
 public class ForNode extends AbstractRenderableNode {
 
@@ -45,8 +45,8 @@ public class ForNode extends AbstractRenderableNode {
     }
 
     @Override
-    public void render(PebbleTemplateImpl self, Writer writer, EvaluationContext context) throws PebbleException,
-            IOException {
+    public void render(PebbleTemplateImpl self, Writer writer, EvaluationContext context)
+            throws PebbleException, IOException {
         Object iterableEvaluation = iterableExpression.evaluate(self, context);
         Iterable<?> iterable = null;
 
@@ -62,21 +62,26 @@ public class ForNode extends AbstractRenderableNode {
 
         if (iterator.hasNext()) {
 
+            ScopeChain scopeChain = context.getScopeChain();
+
             /*
              * Only if there is a variable name conflict between one of the
              * variables added by the for loop construct and an existing
              * variable do we push another scope, otherwise we reuse the current
              * scope for performance purposes.
              */
-            if (context.currentScopeContainsVariable("loop") || context.currentScopeContainsVariable(variableName)) {
-                context.pushScope();
+            if (scopeChain.currentScopeContainsVariable("loop") || scopeChain
+                    .currentScopeContainsVariable(variableName)) {
+                scopeChain.pushScope();
                 newScope = true;
             }
 
             int length = getIteratorSize(iterableEvaluation);
             int index = 0;
 
-            Map<String, Object> loop = new HashMap<>();
+            Map<String, Object> loop = null;
+
+            boolean usingExecutorService = context.getExecutorService() != null;
 
             while (iterator.hasNext()) {
 
@@ -86,25 +91,35 @@ public class ForNode extends AbstractRenderableNode {
                  * re-using the same one; it's imperative that each thread would
                  * get it's own distinct copy of the context.
                  */
-                if(context.getExecutorService() != null) {
+                if (index == 0 || usingExecutorService) {
                     loop = new HashMap<>();
+                    loop.put("first", index == 0);
+                    loop.put("last", index == length - 1);
+                    loop.put("length", length);
+                }else{
+
+                    // second iteration
+                    if(index == 1){
+                        loop.put("first", false);
+                    }
+
+                    // last iteration
+                    if(index == length - 1){
+                        loop.put("last", true);
+                    }
                 }
-                loop.put("last", index == length - 1);
-                loop.put("first", index == 0);
+
                 loop.put("revindex", length - index - 1);
                 loop.put("index", index++);
-                loop.put("length", length);
-                loop.put("length", length);
 
-                context.put("loop", loop);
+                scopeChain.put("loop", loop);
 
-                context.put(variableName, iterator.next());
+                scopeChain.put(variableName, iterator.next());
                 body.render(self, writer, context);
-
             }
 
             if (newScope) {
-                context.popScope();
+                scopeChain.popScope();
             }
 
         } else if (elseBody != null) {

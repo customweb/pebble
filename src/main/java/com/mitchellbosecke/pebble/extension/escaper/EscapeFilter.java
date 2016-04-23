@@ -1,20 +1,23 @@
 /*******************************************************************************
  * This file is part of Pebble.
- * 
+ *
  * Copyright (c) 2014 by Mitchell Bösecke
- * 
+ *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
 package com.mitchellbosecke.pebble.extension.escaper;
 
+import com.coverity.security.Escape;
+import com.mitchellbosecke.pebble.error.PebbleException;
+import com.mitchellbosecke.pebble.extension.Filter;
+import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+import com.mitchellbosecke.pebble.utils.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.coverity.security.Escape;
-import com.mitchellbosecke.pebble.extension.Filter;
 
 public class EscapeFilter implements Filter {
 
@@ -72,15 +75,17 @@ public class EscapeFilter implements Filter {
         });
     }
 
+    @Override
     public List<String> getArgumentNames() {
         return argumentNames;
     }
 
-    public Object apply(Object inputObject, Map<String, Object> args) {
-        if (!(inputObject instanceof String)) {
+    @Override
+    public Object apply(Object inputObject, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) throws PebbleException {
+        if (inputObject == null || inputObject instanceof SafeString) {
             return inputObject;
         }
-        String input = (String) inputObject;
+        String input = StringUtils.toString(inputObject);
 
         String strategy = defaultStrategy;
 
@@ -89,11 +94,10 @@ public class EscapeFilter implements Filter {
         }
 
         if (!strategies.containsKey(strategy)) {
-            throw new RuntimeException(String.format("Unknown escaping strategy [%s]", strategy));
+            throw new PebbleException(null, String.format("Unknown escaping strategy [%s]", strategy), lineNumber, self.getName());
         }
 
-        input = strategies.get(strategy).escape(input);
-        return input;
+        return new SafeString(strategies.get(strategy).escape(input));
     }
 
     public String getDefaultStrategy() {

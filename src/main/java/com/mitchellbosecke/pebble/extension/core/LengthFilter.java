@@ -1,12 +1,13 @@
 package com.mitchellbosecke.pebble.extension.core;
 
+import com.mitchellbosecke.pebble.extension.Filter;
+import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.mitchellbosecke.pebble.extension.Filter;
 
 public class LengthFilter implements Filter {
 
@@ -16,11 +17,10 @@ public class LengthFilter implements Filter {
     }
 
     @Override
-    public Object apply(Object input, Map<String, Object> args) {
+    public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) {
         if (input == null) {
             return 0;
         }
-
         if (input instanceof String) {
             return ((String) input).length();
         } else if (input instanceof Collection) {

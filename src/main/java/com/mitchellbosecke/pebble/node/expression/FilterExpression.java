@@ -1,21 +1,24 @@
 /*******************************************************************************
  * This file is part of Pebble.
- *
+ * <p>
  * Copyright (c) 2014 by Mitchell Bösecke
- *
+ * <p>
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  ******************************************************************************/
 package com.mitchellbosecke.pebble.node.expression;
 
-import java.util.Map;
-
+import com.mitchellbosecke.pebble.error.AttributeNotFoundException;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.extension.Filter;
-import com.mitchellbosecke.pebble.extension.LocaleAware;
+import com.mitchellbosecke.pebble.extension.core.DefaultFilter;
+import com.mitchellbosecke.pebble.extension.escaper.EscapeFilter;
+import com.mitchellbosecke.pebble.extension.escaper.SafeString;
 import com.mitchellbosecke.pebble.node.ArgumentsNode;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+
+import java.util.Map;
 
 public class FilterExpression extends BinaryExpression<Object> {
 
@@ -37,20 +40,35 @@ public class FilterExpression extends BinaryExpression<Object> {
         String filterName = filterInvocation.getFilterName();
 
         if (this.filter == null) {
-            Map<String, Filter> filters = context.getFilters();
-            this.filter = filters.get(filterInvocation.getFilterName());
+            this.filter = context.getExtensionRegistry().getFilter(filterInvocation.getFilterName());
         }
 
         if (filter == null) {
-            throw new PebbleException(null, String.format("Filter [%s] does not exist.", filterName), this.getLineNumber(), self.getName());
-        }
-
-        if (filter instanceof LocaleAware) {
-            ((LocaleAware) filter).setLocale(context.getLocale());
+            throw new PebbleException(null, String.format("Filter [%s] does not exist.", filterName),
+                    this.getLineNumber(), self.getName());
         }
 
         Map<String, Object> namedArguments = args.getArgumentMap(self, context, filter);
 
-        return filter.apply(getLeftExpression().evaluate(self, context), namedArguments);
+        // This check is not nice, because we use instanceof. However this is
+        // the only filter which should not fail in strict mode, when the variable
+        // is not set, because this method should exactly test this. Hence a
+        // generic solution to allow other tests to reuse this feature make no sense
+        Object input;
+        if (filter instanceof DefaultFilter) {
+            try {
+                input = getLeftExpression().evaluate(self, context);
+            } catch (AttributeNotFoundException ex) {
+                input = null;
+            }
+        } else {
+            input = getLeftExpression().evaluate(self, context);
+        }
+
+        if (input instanceof SafeString && !(filter instanceof EscapeFilter)) {
+            input = input.toString();
+        }
+
+        return filter.apply(input, namedArguments, self, this.getLineNumber());
     }
 }

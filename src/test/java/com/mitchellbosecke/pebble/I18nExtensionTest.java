@@ -9,8 +9,6 @@
 package com.mitchellbosecke.pebble;
 
 import com.mitchellbosecke.pebble.error.PebbleException;
-import com.mitchellbosecke.pebble.extension.i18n.I18nExtension;
-import com.mitchellbosecke.pebble.loader.Loader;
 import com.mitchellbosecke.pebble.loader.StringLoader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import org.junit.Test;
@@ -26,9 +24,7 @@ public class I18nExtensionTest extends AbstractTest {
 
     @Test
     public void testSimpleLookup() throws PebbleException, IOException {
-        Loader<?> loader = new StringLoader();
-        PebbleEngine pebble = new PebbleEngine(loader);
-        pebble.addExtension(new I18nExtension());
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).build();
 
         PebbleTemplate template = pebble.getTemplate("{{ i18n('testMessages','greeting') }}");
 
@@ -39,9 +35,7 @@ public class I18nExtensionTest extends AbstractTest {
 
     @Test
     public void testMessageWithNamedArguments() throws PebbleException, IOException {
-        Loader<?> loader = new StringLoader();
-        PebbleEngine pebble = new PebbleEngine(loader);
-        pebble.addExtension(new I18nExtension());
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).build();
 
         PebbleTemplate template = pebble.getTemplate("{{ i18n(bundle='testMessages',key='greeting') }}");
 
@@ -52,9 +46,7 @@ public class I18nExtensionTest extends AbstractTest {
 
     @Test
     public void testLookupWithLocale() throws PebbleException, IOException {
-        Loader<?> loader = new StringLoader();
-        PebbleEngine pebble = new PebbleEngine(loader);
-        pebble.addExtension(new I18nExtension());
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).build();
 
         PebbleTemplate template = pebble.getTemplate("{{ i18n('testMessages','greeting') }}");
 
@@ -63,11 +55,20 @@ public class I18nExtensionTest extends AbstractTest {
         assertEquals("Hola", writer.toString());
     }
 
-    @Test
-    public void testMessageWithParams() throws PebbleException, IOException {
-        Loader<?> loader = new StringLoader();
-        PebbleEngine pebble = new PebbleEngine(loader);
-        pebble.addExtension(new I18nExtension());
+	@Test
+	public void testLookupSpecialChar() throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).build();
+
+		PebbleTemplate template = pebble.getTemplate("{{ i18n('testMessages','greeting.specialchars') }}");
+
+		Writer writer = new StringWriter();
+		template.evaluate(writer, new Locale("es", "US"));
+		assertEquals("Hola español", writer.toString());
+	}
+
+	@Test
+	public void testMessageWithParams() throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).build();
 
         PebbleTemplate template = pebble.getTemplate("{{ i18n('testMessages','greeting.someone', 'Pebble') }}");
 
