@@ -51,7 +51,7 @@ public class SliceFilter implements Filter {
         }
         int from = ((Number) argFrom).intValue();
         if (from < 0) {
-            throw new IllegalArgumentException("fromIndex must be greater than 0");
+            throw new PebbleException(null, "fromIndex must be greater than 0", lineNumber, self.getName());
         }
 
         Object argTo = args.get("toIndex");

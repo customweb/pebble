@@ -703,7 +703,7 @@ public class CoreFiltersTest extends AbstractTest {
         assertEquals("Alex", writer.toString());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = PebbleException.class)
     public void testSliceWithInvalidFirstArg() throws PebbleException, IOException {
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false).build();
 
@@ -955,7 +955,7 @@ public class CoreFiltersTest extends AbstractTest {
         assertEquals("{one=1, two=2} two [1,2] 2 [1,2]", writer.toString());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = PebbleException.class)
     public void testMergeMapWithStringAndFail() throws PebbleException, IOException {
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false).build();
 

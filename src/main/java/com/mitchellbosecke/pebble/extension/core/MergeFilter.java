@@ -45,7 +45,7 @@ public class MergeFilter implements Filter {
         }
         // left hand side argument defines resulting type
         if (input instanceof Map) {
-            return mergeAsMap((Map<?, ?>) input, items);
+            return mergeAsMap((Map<?, ?>) input, items, lineNumber, self);
         } else if (input instanceof List) {
             return mergeAsList((List<?>) input, items, lineNumber, self);
         } else if (input.getClass().isArray()) {
@@ -55,7 +55,7 @@ public class MergeFilter implements Filter {
         }
     }
 
-    private Object mergeAsMap(Map<?, ?> arg1, Object arg2) {
+    private Object mergeAsMap(Map<?, ?> arg1, Object arg2, int lineNumber, PebbleTemplateImpl self) throws PebbleException{
         Map<?, ?> collection1 = arg1;
         Map<Object, Object> output = null;
         if (arg2 instanceof Map) {
@@ -71,8 +71,8 @@ public class MergeFilter implements Filter {
                 output.put(o, o);
             }
         } else {
-            throw new UnsupportedOperationException(
-                    "Currently, only Maps and Lists can be merged with a Map. Arg2: " + arg2.getClass().getName());
+            throw new PebbleException(null, "Currently, only Maps and Lists can be merged with a Map. Arg2: " + arg2.getClass().getName(),
+                    lineNumber, self.getName());
         }
         return output;
     }
