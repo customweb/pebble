@@ -50,6 +50,18 @@ public class ParsingOdditiesTest extends AbstractTest {
         assertEquals("2", writer.toString());
     }
 
+    @Test(expected = PebbleException.class)
+    public void testNotIterableInForTag() throws IOException, PebbleException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false)
+                .defaultLocale(Locale.ENGLISH).build();
+        String source = "{% for key in testObject %}{{ key }}{% endfor %}";
+        PebbleTemplate template = pebble.getTemplate(source);
+        Map<String, Object> context = new HashMap<>();
+        context.put("testObject", new Object());
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
     @Test
     public void testPositionalAndNamedArguments() throws PebbleException, IOException, ParseException {
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false)

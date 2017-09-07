@@ -56,6 +56,11 @@ public class ForNode extends AbstractRenderableNode {
 
         iterable = toIterable(iterableEvaluation);
 
+        if (iterable == null) {
+            throw new PebbleException(null, "The object to be iterated over must be an instance of either an Iterable or a Map.",
+                    getLineNumber(), self.getName());
+        }
+
         Iterator<?> iterator = iterable.iterator();
 
         boolean newScope = false;
