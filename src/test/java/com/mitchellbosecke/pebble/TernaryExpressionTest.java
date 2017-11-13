@@ -167,6 +167,17 @@ public class TernaryExpressionTest extends AbstractTest {
         template.evaluate(writer, new HashMap<String, Object>());
     }
 
+    @Test(expected = PebbleException.class)
+    public void testTernaryFail14() throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false).build();
+
+        String source = "{{ 'not a boolean' ? '1' : '2' }}";
+        PebbleTemplate template = pebble.getTemplate(source);
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, new HashMap<String, Object>());
+    }
+
     @Test
     public void testTernary1() throws PebbleException, IOException {
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false).build();
