@@ -12,6 +12,7 @@ import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.extension.escaper.SafeString;
 import com.mitchellbosecke.pebble.node.ArgumentsNode;
+import com.mitchellbosecke.pebble.node.ObjectPrinter;
 import com.mitchellbosecke.pebble.node.RootNode;
 import com.mitchellbosecke.pebble.utils.FutureWriter;
 
@@ -337,8 +338,14 @@ public class PebbleTemplateImpl implements PebbleTemplate {
      *
      * @return The name of the template
      */
+    @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public ObjectPrinter getObjectPrinter() {
+    	return this.engine.getObjectPrinter();
     }
 
 }

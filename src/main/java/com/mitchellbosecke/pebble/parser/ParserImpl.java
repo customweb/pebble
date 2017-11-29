@@ -24,207 +24,220 @@ import java.util.Map;
 
 public class ParserImpl implements Parser {
 
-    /**
-     * Binary operators
-     */
-    private final Map<String, BinaryOperator> binaryOperators;
+	/**
+	 * Binary operators
+	 */
+	private final Map<String, BinaryOperator> binaryOperators;
 
-    /**
-     * Unary operators
-     */
-    private final Map<String, UnaryOperator> unaryOperators;
+	/**
+	 * Unary operators
+	 */
+	private final Map<String, UnaryOperator> unaryOperators;
 
-    /**
-     * Token parsers
-     */
-    private final Map<String, TokenParser> tokenParsers;
+	/**
+	 * Token parsers
+	 */
+	private final Map<String, TokenParser> tokenParsers;
 
-    /**
-     * An expression parser.
-     */
-    private ExpressionParser expressionParser;
+	/**
+	 * An expression parser.
+	 */
+	private ExpressionParser expressionParser;
 
-    /**
-     * The TokenStream that we are converting into an Abstract Syntax Tree.
-     */
-    private TokenStream stream;
+	/**
+	 * The TokenStream that we are converting into an Abstract Syntax Tree.
+	 */
+	private TokenStream stream;
 
-    /**
-     * TokenParser objects provided by the extensions.
-     */
+	/**
+	 * TokenParser objects provided by the extensions.
+	 */
 
-    /**
-     * used to keep track of the name of the block that we are currently inside
-     * of. This is purely just for the parent() function.
-     */
-    private LinkedList<String> blockStack;
+	/**
+	 * used to keep track of the name of the block that we are currently inside
+	 * of. This is purely just for the parent() function.
+	 */
+	private LinkedList<String> blockStack;
 
-    /**
-     * Constructor
-     *
-     * @param binaryOperators A map of binary operators
-     * @param unaryOperators  A map of unary operators
-     * @param tokenParsers    A map of token parsers
-     */
-    public ParserImpl(Map<String, UnaryOperator> unaryOperators, Map<String, BinaryOperator> binaryOperators,
-                      Map<String, TokenParser> tokenParsers) {
-        this.binaryOperators = binaryOperators;
-        this.unaryOperators = unaryOperators;
-        this.tokenParsers = tokenParsers;
-    }
+	private final ObjectPrinter printer;
 
-    @Override
-    public RootNode parse(TokenStream stream) throws ParserException {
+	/**
+	 * Constructor
+	 *
+	 * @param binaryOperators
+	 *            A map of binary operators
+	 * @param unaryOperators
+	 *            A map of unary operators
+	 * @param tokenParsers
+	 *            A map of token parsers
+	 */
+	public ParserImpl(Map<String, UnaryOperator> unaryOperators, Map<String, BinaryOperator> binaryOperators,
+			Map<String, TokenParser> tokenParsers, ObjectPrinter printer) {
+		this.binaryOperators = binaryOperators;
+		this.unaryOperators = unaryOperators;
+		this.tokenParsers = tokenParsers;
+		this.printer = printer;
+	}
 
-        // expression parser
-        this.expressionParser = new ExpressionParser(this, binaryOperators, unaryOperators);
+	@Override
+	public RootNode parse(TokenStream stream) throws ParserException {
 
-        this.stream = stream;
+		// expression parser
+		this.expressionParser = new ExpressionParser(this, binaryOperators, unaryOperators);
 
-        this.blockStack = new LinkedList<>();
+		this.stream = stream;
 
-        BodyNode body = subparse();
+		this.blockStack = new LinkedList<>();
 
-        RootNode root = new RootNode(body);
-        return root;
-    }
+		BodyNode body = subparse();
 
-    @Override
-    public BodyNode subparse() throws ParserException {
-        return subparse(null);
-    }
+		RootNode root = new RootNode(body);
+		return root;
+	}
 
-    @Override
-    /**
-     * The main method for the parser. This method does the work of converting
-     * a TokenStream into a Node
-     *
-     * @param stopCondition    A stopping condition provided by a token parser
-     * @return Node        The root node of the generated Abstract Syntax Tree
-     */ public BodyNode subparse(StoppingCondition stopCondition) throws ParserException {
+	@Override
+	public BodyNode subparse() throws ParserException {
+		return subparse(null);
+	}
 
-        // these nodes will be the children of the root node
-        List<RenderableNode> nodes = new ArrayList<>();
+	@Override
+	/**
+	 * The main method for the parser. This method does the work of converting a
+	 * TokenStream into a Node
+	 *
+	 * @param stopCondition
+	 *            A stopping condition provided by a token parser
+	 * @return Node The root node of the generated Abstract Syntax Tree
+	 */
+	public BodyNode subparse(StoppingCondition stopCondition) throws ParserException {
 
-        Token token;
-        while (!stream.isEOF()) {
+		// these nodes will be the children of the root node
+		List<RenderableNode> nodes = new ArrayList<>();
 
-            switch (stream.current().getType()) {
-                case TEXT:
+		Token token;
+		while (!stream.isEOF()) {
 
-                /*
-                 * The current token is a text token. Not much to do here other
-                 * than convert it to a text Node.
-                 */
-                    token = stream.current();
-                    nodes.add(new TextNode(token.getValue(), token.getLineNumber()));
-                    stream.next();
-                    break;
+			switch (stream.current().getType()) {
+			case TEXT:
 
-                case PRINT_START:
+				/*
+				 * The current token is a text token. Not much to do here other
+				 * than convert it to a text Node.
+				 */
+				token = stream.current();
+				nodes.add(new TextNode(token.getValue(), token.getLineNumber()));
+				stream.next();
+				break;
 
-                /*
-                 * We are entering a print delimited region at this point. These
-                 * regions will contain some sort of expression so let's pass
-                 * control to our expression parser.
-                 */
+			case PRINT_START:
 
-                    // go to the next token because the current one is just the
-                    // opening delimiter
-                    token = stream.next();
+				/*
+				 * We are entering a print delimited region at this point. These
+				 * regions will contain some sort of expression so let's pass
+				 * control to our expression parser.
+				 */
 
-                    Expression<?> expression = this.expressionParser.parseExpression();
-                    nodes.add(new PrintNode(expression, token.getLineNumber()));
+				// go to the next token because the current one is just the
+				// opening delimiter
+				token = stream.next();
 
-                    // we expect to see a print closing delimiter
-                    stream.expect(Token.Type.PRINT_END);
+				Expression<?> expression = this.expressionParser.parseExpression();
+				nodes.add(new PrintNode(this.printer, expression, token.getLineNumber()));
 
-                    break;
+				// we expect to see a print closing delimiter
+				stream.expect(Token.Type.PRINT_END);
 
-                case EXECUTE_START:
+				break;
 
-                    // go to the next token because the current one is just the
-                    // opening delimiter
-                    stream.next();
+			case EXECUTE_START:
 
-                    token = stream.current();
+				// go to the next token because the current one is just the
+				// opening delimiter
+				stream.next();
 
-                /*
-                 * We expect a name token at the beginning of every block.
-                 *
-                 * We do not use stream.expect() because it consumes the current
-                 * token. The current token may be needed by a token parser
-                 * which has provided a stopping condition. Ex. the 'if' token
-                 * parser may need to check if the current token is either
-                 * 'endif' or 'else' and act accordingly, thus we should not
-                 * consume it.
-                 */
-                    if (!Token.Type.NAME.equals(token.getType())) {
-                        throw new ParserException(null, "A block must start with a tag name.", token.getLineNumber(),
-                                stream.getFilename());
-                    }
+				token = stream.current();
 
-                    // If this method was executed using a TokenParser and
-                    // that parser provided a stopping condition (ex. checking
-                    // for the 'endif' token) let's check for that condition
-                    // now.
-                    if (stopCondition != null && stopCondition.evaluate(token)) {
-                        return new BodyNode(token.getLineNumber(), nodes);
-                    }
+				/*
+				 * We expect a name token at the beginning of every block.
+				 *
+				 * We do not use stream.expect() because it consumes the current
+				 * token. The current token may be needed by a token parser
+				 * which has provided a stopping condition. Ex. the 'if' token
+				 * parser may need to check if the current token is either
+				 * 'endif' or 'else' and act accordingly, thus we should not
+				 * consume it.
+				 */
+				if (!Token.Type.NAME.equals(token.getType())) {
+					throw new ParserException(null, "A block must start with a tag name.", token.getLineNumber(),
+							stream.getFilename());
+				}
 
-                    // find an appropriate parser for this name
-                    TokenParser tokenParser = tokenParsers.get(token.getValue());
+				// If this method was executed using a TokenParser and
+				// that parser provided a stopping condition (ex. checking
+				// for the 'endif' token) let's check for that condition
+				// now.
+				if (stopCondition != null && stopCondition.evaluate(token)) {
+					return new BodyNode(token.getLineNumber(), nodes);
+				}
 
-                    if (tokenParser == null) {
-                        throw new ParserException(null, String.format("Unexpected tag name \"%s\"", token.getValue()),
-                                token.getLineNumber(), stream.getFilename());
-                    }
+				// find an appropriate parser for this name
+				TokenParser tokenParser = tokenParsers.get(token.getValue());
 
-                    RenderableNode node = tokenParser.parse(token, this);
+				if (tokenParser == null) {
+					throw new ParserException(null, String.format("Unexpected tag name \"%s\"", token.getValue()),
+							token.getLineNumber(), stream.getFilename());
+				}
 
-                    // node might be null (ex. "extend" token parser)
-                    if (node != null) {
-                        nodes.add(node);
-                    }
+				RenderableNode node = tokenParser.parse(token, this);
 
-                    break;
+				// node might be null (ex. "extend" token parser)
+				if (node != null) {
+					nodes.add(node);
+				}
 
-                default:
-                    throw new ParserException(null, "Parser ended in undefined state.", stream.current().getLineNumber(),
-                            stream.getFilename());
-            }
-        }
+				break;
 
-        // create the root node with the children that we have found
-        return new BodyNode(stream.current().getLineNumber(), nodes);
-    }
+			default:
+				throw new ParserException(null, "Parser ended in undefined state.", stream.current().getLineNumber(),
+						stream.getFilename());
+			}
+		}
 
-    @Override
-    public TokenStream getStream() {
-        return stream;
-    }
+		// create the root node with the children that we have found
+		return new BodyNode(stream.current().getLineNumber(), nodes);
+	}
 
-    public void setStream(TokenStream stream) {
-        this.stream = stream;
-    }
+	@Override
+	public TokenStream getStream() {
+		return stream;
+	}
 
-    @Override
-    public ExpressionParser getExpressionParser() {
-        return this.expressionParser;
-    }
+	public void setStream(TokenStream stream) {
+		this.stream = stream;
+	}
 
-    @Override
-    public String peekBlockStack() {
-        return blockStack.peek();
-    }
+	@Override
+	public ExpressionParser getExpressionParser() {
+		return this.expressionParser;
+	}
 
-    @Override
-    public String popBlockStack() {
-        return blockStack.pop();
-    }
+	@Override
+	public String peekBlockStack() {
+		return blockStack.peek();
+	}
 
-    @Override
-    public void pushBlockStack(String blockName) {
-        blockStack.push(blockName);
-    }
+	@Override
+	public String popBlockStack() {
+		return blockStack.pop();
+	}
+
+	@Override
+	public void pushBlockStack(String blockName) {
+		blockStack.push(blockName);
+	}
+
+	@Override
+	public ObjectPrinter getPrinter() {
+		return printer;
+	}
 }

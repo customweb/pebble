@@ -30,7 +30,7 @@ public class LowerFilter implements Filter {
         if (input instanceof String) {
             return ((String) input).toLowerCase(Locale.ENGLISH);
         } else {
-            return input.toString().toLowerCase(Locale.ENGLISH);
+            return self.getObjectPrinter().converToString(input).toLowerCase(Locale.ENGLISH);
         }
     }
 

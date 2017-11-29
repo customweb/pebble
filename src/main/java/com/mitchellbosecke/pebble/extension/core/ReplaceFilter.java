@@ -19,30 +19,43 @@ import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
  */
 public class ReplaceFilter implements Filter {
 
-    public static final String FILTER_NAME = "replace";
+	public static final String FILTER_NAME = "replace";
 
-    private static final String ARGUMENT_NAME = "replace_pairs";
+	private static final String ARGUMENT_NAME = "replace_pairs";
 
-    private final static List<String> ARGS = Collections.unmodifiableList(Arrays.asList(ARGUMENT_NAME));
+	private final static List<String> ARGS = Collections.unmodifiableList(Arrays.asList(ARGUMENT_NAME));
 
-    @Override
-    public List<String> getArgumentNames() {
-        return ARGS;
-    }
+	@Override
+	public List<String> getArgumentNames() {
+		return ARGS;
+	}
 
-    @Override
-    public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) throws PebbleException{
-        String data = input.toString();
-        if (args.get(ARGUMENT_NAME) == null) {
-            throw new PebbleException(null, MessageFormat.format("The argument ''{0}'' is required.", ARGUMENT_NAME), lineNumber, self.getName());
-        }
-        Map<?, ?> replacePair = (Map<?, ?>) args.get(ARGUMENT_NAME);
+	@Override
+	public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber)
+			throws PebbleException {
+		if (input == null) {
+			return null;
+		}
 
-        for (Entry<?, ?> entry : replacePair.entrySet()) {
-           data = data.replace(entry.getKey().toString(), entry.getValue().toString());
-        }
+		String data;
 
-        return data;
-    }
+		if (input instanceof String) {
+			data = (String) input;
+		} else {
+			data = self.getObjectPrinter().converToString(input);
+		}
+
+		if (args.get(ARGUMENT_NAME) == null) {
+			throw new PebbleException(null, MessageFormat.format("The argument ''{0}'' is required.", ARGUMENT_NAME),
+					lineNumber, self.getName());
+		}
+		Map<?, ?> replacePair = (Map<?, ?>) args.get(ARGUMENT_NAME);
+
+		for (Entry<?, ?> entry : replacePair.entrySet()) {
+			data = data.replace(entry.getKey().toString(), entry.getValue().toString());
+		}
+
+		return data;
+	}
 
 }

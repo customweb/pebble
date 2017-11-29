@@ -66,7 +66,7 @@ public class FilterTokenParser extends AbstractTokenParser {
             lastExpression = filterExpression;
         }
 
-        return new PrintNode(lastExpression, lineNumber);
+        return new PrintNode(parser.getPrinter(), lastExpression, lineNumber);
     }
 
     private StoppingCondition endFilter = new StoppingCondition() {

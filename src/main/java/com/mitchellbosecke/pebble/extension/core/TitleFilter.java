@@ -26,7 +26,13 @@ public class TitleFilter implements Filter {
         if (input == null) {
             return null;
         }
-        String value = (String) input;
+		final String value;
+
+		if (input instanceof String) {
+			value = (String) input;
+		} else {
+			value = self.getObjectPrinter().converToString(input);
+		}
 
         if (value.length() == 0) {
             return value;

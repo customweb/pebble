@@ -16,6 +16,7 @@ import java.util.Map;
 
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.extension.Filter;
+import com.mitchellbosecke.pebble.node.ObjectPrinter;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
 
 /**
@@ -27,60 +28,64 @@ import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
  */
 public class JoinFilter implements Filter {
 
-    private final List<String> argumentNames = new ArrayList<>();
+	private final List<String> argumentNames = new ArrayList<>();
 
-    public JoinFilter() {
-        argumentNames.add("separator");
-    }
+	public JoinFilter() {
+		argumentNames.add("separator");
+	}
 
-    @Override
-    public List<String> getArgumentNames() {
-        return argumentNames;
-    }
+	@Override
+	public List<String> getArgumentNames() {
+		return argumentNames;
+	}
 
-    @Override
-    public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber)
-            throws PebbleException {
-        if (input == null) {
-            return null;
-        }
+	@Override
+	public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber)
+			throws PebbleException {
+		if (input == null) {
+			return null;
+		}
 
-        String glue = null;
-        if (args.containsKey("separator")) {
-            glue = (String) args.get("separator");
-        }
+		String glue = null;
+		if (args.containsKey("separator")) {
+			glue = (String) args.get("separator");
+		}
 
-        if (input.getClass().isArray()) {
-            List<Object> items = new ArrayList<>();
-            int length = Array.getLength(input);
-            for (int i = 0; i < length; i++) {
-                items.add(Array.get(input, i));
-            }
-            return join(items, glue);
-        }
+		if (input.getClass().isArray()) {
+			List<Object> items = new ArrayList<>();
+			int length = Array.getLength(input);
+			for (int i = 0; i < length; i++) {
+				items.add(Array.get(input, i));
+			}
+			return join(items, glue, self.getObjectPrinter());
+		}
 
-        else if (input instanceof Collection) {
-            return join((Collection<?>) input, glue);
-        } else {
-            throw new PebbleException(null,
-                    "The 'join' filter expects that the input is either a collection or an array.", lineNumber,
-                    self.getName());
-        }
-    }
+		else if (input instanceof Collection) {
+			return join((Collection<?>) input, glue, self.getObjectPrinter());
+		} else {
+			throw new PebbleException(null,
+					"The 'join' filter expects that the input is either a collection or an array.", lineNumber,
+					self.getName());
+		}
+	}
 
-    private String join(Collection<?> inputCollection, String glue) {
-        StringBuilder builder = new StringBuilder();
+	private String join(Collection<?> inputCollection, String glue, ObjectPrinter printer) {
+		StringBuilder builder = new StringBuilder();
 
-        boolean isFirst = true;
-        for (Object entry : inputCollection) {
+		boolean isFirst = true;
+		for (Object entry : inputCollection) {
 
-            if (!isFirst && glue != null) {
-                builder.append(glue);
-            }
-            builder.append(entry);
+			if (!isFirst && glue != null) {
+				builder.append(glue);
+			}
+			if (entry != null) {
+				builder.append(printer.converToString(entry));
+			} else {
+				builder.append(entry);
+			}
 
-            isFirst = false;
-        }
-        return builder.toString();
-    }
+			isFirst = false;
+		}
+		return builder.toString();
+	}
 }

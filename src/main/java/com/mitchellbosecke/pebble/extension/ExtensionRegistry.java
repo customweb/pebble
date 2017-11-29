@@ -14,187 +14,201 @@ import java.util.*;
  */
 public class ExtensionRegistry {
 
-    /**
-     * Extensions
-     */
-    private final Map<Class<? extends Extension>, Extension> extensions;
+	/**
+	 * Extensions
+	 */
+	private final Map<Class<? extends Extension>, Extension> extensions;
 
-    /**
-     * Unary operators used during the lexing phase.
-     */
-    private final Map<String, UnaryOperator> unaryOperators;
+	/**
+	 * Unary operators used during the lexing phase.
+	 */
+	private final Map<String, UnaryOperator> unaryOperators;
 
-    /**
-     * Binary operators used during the lexing phase.
-     */
-    private final Map<String, BinaryOperator> binaryOperators;
+	/**
+	 * Binary operators used during the lexing phase.
+	 */
+	private final Map<String, BinaryOperator> binaryOperators;
 
-    /**
-     * Token parsers used during the parsing phase.
-     */
-    private final Map<String, TokenParser> tokenParsers;
+	/**
+	 * Token parsers used during the parsing phase.
+	 */
+	private final Map<String, TokenParser> tokenParsers;
 
-    /**
-     * Node visitors available during the parsing phase.
-     */
-    private final List<NodeVisitorFactory> nodeVisitors;
+	/**
+	 * Node visitors available during the parsing phase.
+	 */
+	private final List<NodeVisitorFactory> nodeVisitors;
 
-    /**
-     * Filters used during the evaluation phase.
-     */
-    private final Map<String, Filter> filters;
+	/**
+	 * Filters used during the evaluation phase.
+	 */
+	private final Map<String, Filter> filters;
 
-    /**
-     * Tests used during the evaluation phase.
-     */
-    private final Map<String, Test> tests;
+	/**
+	 * Tests used during the evaluation phase.
+	 */
+	private final Map<String, Test> tests;
 
-    /**
-     * Functions used during the evaluation phase.
-     */
-    private final Map<String, Function> functions;
+	/**
+	 * Functions used during the evaluation phase.
+	 */
+	private final Map<String, Function> functions;
 
-    /**
-     * Global variables available during the evaluation phase.
-     */
-    private final Map<String, Object> globalVariables;
+	/**
+	 * Global variables available during the evaluation phase.
+	 */
+	private final Map<String, Object> globalVariables;
 
-    public ExtensionRegistry(Collection<? extends Extension> extensions) {
+	private final List<ObjectPrintStrategy> objectPrintStrategies;
 
-        final HashMap<Class<? extends Extension>, Extension> extensionsMap = new HashMap<>();
-        final Map<String, TokenParser> tokenParsersMap = new HashMap<>();
-        final Map<String, UnaryOperator> unaryOperatorsMap = new HashMap<>();
-        final Map<String, BinaryOperator> binaryOperatorsMap = new HashMap<>();
-        final List<NodeVisitorFactory> nodeVisitorsMap = new ArrayList<>();
-        final Map<String, Filter> filtersList = new HashMap<>();
-        final Map<String, Test> testsMap = new HashMap<>();
-        final Map<String, Function> functionsMap = new HashMap<>();
-        final Map<String, Object> globalVariablesMap = new HashMap<>();
+	public ExtensionRegistry(Collection<? extends Extension> extensions) {
 
-        for (Extension extension : extensions) {
-            extensionsMap.put(extension.getClass(), extension);
+		final HashMap<Class<? extends Extension>, Extension> extensionsMap = new HashMap<>();
+		final Map<String, TokenParser> tokenParsersMap = new HashMap<>();
+		final Map<String, UnaryOperator> unaryOperatorsMap = new HashMap<>();
+		final Map<String, BinaryOperator> binaryOperatorsMap = new HashMap<>();
+		final List<NodeVisitorFactory> nodeVisitorsMap = new ArrayList<>();
+		final Map<String, Filter> filtersList = new HashMap<>();
+		final Map<String, Test> testsMap = new HashMap<>();
+		final Map<String, Function> functionsMap = new HashMap<>();
+		final Map<String, Object> globalVariablesMap = new HashMap<>();
+		final List<ObjectPrintStrategy> objectPrintStrategies = new ArrayList<>();
 
-            // token parsers
-            List<TokenParser> tokenParsers = extension.getTokenParsers();
-            if (tokenParsers != null) {
-                for (TokenParser tokenParser : tokenParsers) {
-                    tokenParsersMap.put(tokenParser.getTag(), tokenParser);
-                }
-            }
+		for (Extension extension : extensions) {
+			extensionsMap.put(extension.getClass(), extension);
 
-            // binary operators
-            List<BinaryOperator> binaryOperators = extension.getBinaryOperators();
-            if (binaryOperators != null) {
-                for (BinaryOperator operator : binaryOperators) {
-                    if (!binaryOperatorsMap.containsKey(operator.getSymbol())) { // disallow
-                                                                                 // overriding
-                                                                                 // core
-                                                                                 // operators
-                        binaryOperatorsMap.put(operator.getSymbol(), operator);
-                    }
-                }
-            }
+			// token parsers
+			List<TokenParser> tokenParsers = extension.getTokenParsers();
+			if (tokenParsers != null) {
+				for (TokenParser tokenParser : tokenParsers) {
+					tokenParsersMap.put(tokenParser.getTag(), tokenParser);
+				}
+			}
 
-            // unary operators
-            List<UnaryOperator> unaryOperators = extension.getUnaryOperators();
-            if (unaryOperators != null) {
-                for (UnaryOperator operator : unaryOperators) {
-                    if (!unaryOperatorsMap.containsKey(operator.getSymbol())) { // disallow
-                                                                                // override
-                                                                                // core
-                                                                                // operators
-                        unaryOperatorsMap.put(operator.getSymbol(), operator);
-                    }
-                }
-            }
+			// binary operators
+			List<BinaryOperator> binaryOperators = extension.getBinaryOperators();
+			if (binaryOperators != null) {
+				for (BinaryOperator operator : binaryOperators) {
+					if (!binaryOperatorsMap.containsKey(operator.getSymbol())) { // disallow
+																					// overriding
+																					// core
+																					// operators
+						binaryOperatorsMap.put(operator.getSymbol(), operator);
+					}
+				}
+			}
 
-            // filters
-            Map<String, Filter> filters = extension.getFilters();
-            if (filters != null) {
-                filtersList.putAll(filters);
-            }
+			// unary operators
+			List<UnaryOperator> unaryOperators = extension.getUnaryOperators();
+			if (unaryOperators != null) {
+				for (UnaryOperator operator : unaryOperators) {
+					if (!unaryOperatorsMap.containsKey(operator.getSymbol())) { // disallow
+																				// override
+																				// core
+																				// operators
+						unaryOperatorsMap.put(operator.getSymbol(), operator);
+					}
+				}
+			}
 
-            // tests
-            Map<String, Test> tests = extension.getTests();
-            if (tests != null) {
-                testsMap.putAll(tests);
-            }
+			// filters
+			Map<String, Filter> filters = extension.getFilters();
+			if (filters != null) {
+				filtersList.putAll(filters);
+			}
 
-            // tests
-            Map<String, Function> functions = extension.getFunctions();
-            if (functions != null) {
-                functionsMap.putAll(functions);
-            }
+			// tests
+			Map<String, Test> tests = extension.getTests();
+			if (tests != null) {
+				testsMap.putAll(tests);
+			}
 
-            // global variables
-            Map<String, Object> globalVariables = extension.getGlobalVariables();
-            if (globalVariables != null) {
-                globalVariablesMap.putAll(globalVariables);
-            }
+			// tests
+			Map<String, Function> functions = extension.getFunctions();
+			if (functions != null) {
+				functionsMap.putAll(functions);
+			}
 
-            // node visitors
-            List<NodeVisitorFactory> nodeVisitors = extension.getNodeVisitors();
-            if (nodeVisitors != null) {
-                nodeVisitorsMap.addAll(nodeVisitors);
-            }
-        }
-        this.extensions = Collections.unmodifiableMap(extensionsMap);
-        this.tokenParsers = Collections.unmodifiableMap(tokenParsersMap);
-        this.unaryOperators = Collections.unmodifiableMap(unaryOperatorsMap);
-        this.binaryOperators = Collections.unmodifiableMap(binaryOperatorsMap);
-        this.nodeVisitors = Collections.unmodifiableList(nodeVisitorsMap);
-        this.filters = Collections.unmodifiableMap(filtersList);
-        this.tests = Collections.unmodifiableMap(testsMap);
-        this.functions = Collections.unmodifiableMap(functionsMap);
-        this.globalVariables = Collections.unmodifiableMap(globalVariablesMap);
+			// global variables
+			Map<String, Object> globalVariables = extension.getGlobalVariables();
+			if (globalVariables != null) {
+				globalVariablesMap.putAll(globalVariables);
+			}
 
-    }
+			// node visitors
+			List<NodeVisitorFactory> nodeVisitors = extension.getNodeVisitors();
+			if (nodeVisitors != null) {
+				nodeVisitorsMap.addAll(nodeVisitors);
+			}
 
-    public Map<Class<? extends Extension>, Extension> getExtensions() {
-        return extensions;
-    }
+			List<ObjectPrintStrategy> extensionObjectPrintStrategies = extension.getObjectPrintStrategies();
+			if (extensionObjectPrintStrategies != null) {
+				objectPrintStrategies.addAll(extensionObjectPrintStrategies);
+			}
 
-    public Map<String, Filter> getFilters() {
-        return filters;
-    }
+		}
+		this.extensions = Collections.unmodifiableMap(extensionsMap);
+		this.tokenParsers = Collections.unmodifiableMap(tokenParsersMap);
+		this.unaryOperators = Collections.unmodifiableMap(unaryOperatorsMap);
+		this.binaryOperators = Collections.unmodifiableMap(binaryOperatorsMap);
+		this.nodeVisitors = Collections.unmodifiableList(nodeVisitorsMap);
+		this.filters = Collections.unmodifiableMap(filtersList);
+		this.tests = Collections.unmodifiableMap(testsMap);
+		this.functions = Collections.unmodifiableMap(functionsMap);
+		this.globalVariables = Collections.unmodifiableMap(globalVariablesMap);
+		this.objectPrintStrategies = Collections.unmodifiableList(objectPrintStrategies);
 
-    public Map<String, Function> getFunctions() {
-        return functions;
-    }
+	}
 
-    public Map<String, Test> getTests() {
-        return tests;
-    }
+	public Map<Class<? extends Extension>, Extension> getExtensions() {
+		return extensions;
+	}
 
-    public Filter getFilter(String name) {
-        return this.filters.get(name);
-    }
+	public Map<String, Filter> getFilters() {
+		return filters;
+	}
 
-    public Test getTest(String name) {
-        return this.tests.get(name);
-    }
+	public Map<String, Function> getFunctions() {
+		return functions;
+	}
 
-    public Function getFunction(String name) {
-        return this.functions.get(name);
-    }
+	public Map<String, Test> getTests() {
+		return tests;
+	}
 
-    public Map<String, BinaryOperator> getBinaryOperators() {
-        return this.binaryOperators;
-    }
+	public Filter getFilter(String name) {
+		return this.filters.get(name);
+	}
 
-    public Map<String, UnaryOperator> getUnaryOperators() {
-        return this.unaryOperators;
-    }
+	public Test getTest(String name) {
+		return this.tests.get(name);
+	}
 
-    public List<NodeVisitorFactory> getNodeVisitors() {
-        return this.nodeVisitors;
-    }
+	public Function getFunction(String name) {
+		return this.functions.get(name);
+	}
 
-    public Map<String, Object> getGlobalVariables() {
-        return this.globalVariables;
-    }
+	public Map<String, BinaryOperator> getBinaryOperators() {
+		return this.binaryOperators;
+	}
 
-    public Map<String, TokenParser> getTokenParsers() {
-        return this.tokenParsers;
-    }
+	public Map<String, UnaryOperator> getUnaryOperators() {
+		return this.unaryOperators;
+	}
+
+	public List<NodeVisitorFactory> getNodeVisitors() {
+		return this.nodeVisitors;
+	}
+
+	public Map<String, Object> getGlobalVariables() {
+		return this.globalVariables;
+	}
+
+	public Map<String, TokenParser> getTokenParsers() {
+		return this.tokenParsers;
+	}
+
+	public List<ObjectPrintStrategy> getObjectPrintStrategies() {
+		return objectPrintStrategies;
+	}
 }

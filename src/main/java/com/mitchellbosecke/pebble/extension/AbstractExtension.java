@@ -56,4 +56,9 @@ public abstract class AbstractExtension implements Extension {
     public List<NodeVisitorFactory> getNodeVisitors() {
         return null;
     }
+
+    @Override
+    public List<ObjectPrintStrategy> getObjectPrintStrategies() {
+    	return null;
+    }
 }

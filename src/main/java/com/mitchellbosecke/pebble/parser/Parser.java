@@ -11,6 +11,7 @@ package com.mitchellbosecke.pebble.parser;
 import com.mitchellbosecke.pebble.error.ParserException;
 import com.mitchellbosecke.pebble.lexer.TokenStream;
 import com.mitchellbosecke.pebble.node.BodyNode;
+import com.mitchellbosecke.pebble.node.ObjectPrinter;
 import com.mitchellbosecke.pebble.node.RootNode;
 
 public interface Parser {
@@ -44,5 +45,7 @@ public interface Parser {
     String popBlockStack();
 
     void pushBlockStack(String blockName);
+
+    ObjectPrinter getPrinter();
 
 }

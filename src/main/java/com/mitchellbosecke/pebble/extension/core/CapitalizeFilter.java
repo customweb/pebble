@@ -17,38 +17,45 @@ import java.util.Map;
 
 public class CapitalizeFilter implements Filter {
 
-    @Override
-    public List<String> getArgumentNames() {
-        return null;
-    }
+	@Override
+	public List<String> getArgumentNames() {
+		return null;
+	}
 
-    @Override
-    public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) {
-        if (input == null) {
-            return null;
-        }
-        String value = (String) input;
+	@Override
+	public Object apply(Object input, Map<String, Object> args, PebbleTemplateImpl self, int lineNumber) {
+		if (input == null) {
+			return null;
+		}
 
-        if (value.length() == 0) {
-            return value;
-        }
+		final String value;
 
-        StringBuilder result = new StringBuilder();
+		if (input instanceof String) {
+			value = (String) input;
+		} else {
+			value = self.getObjectPrinter().converToString(input);
+		}
 
-        char[] chars = value.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            char c = chars[i];
+		if (value.length() == 0) {
+			return value;
+		}
 
-            if (Character.isWhitespace(c)) {
-                result.append(c);
-            } else {
-                result.append(Character.toTitleCase(c));
-                result.append(Arrays.copyOfRange(chars, i + 1, chars.length));
-                break;
-            }
-        }
+		StringBuilder result = new StringBuilder();
 
-        return result.toString();
-    }
+		char[] chars = value.toCharArray();
+		for (int i = 0; i < chars.length; i++) {
+			char c = chars[i];
+
+			if (Character.isWhitespace(c)) {
+				result.append(c);
+			} else {
+				result.append(Character.toTitleCase(c));
+				result.append(Arrays.copyOfRange(chars, i + 1, chars.length));
+				break;
+			}
+		}
+
+		return result.toString();
+	}
 
 }

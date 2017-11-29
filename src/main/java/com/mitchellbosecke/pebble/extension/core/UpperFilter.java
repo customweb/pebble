@@ -30,7 +30,7 @@ public class UpperFilter implements Filter {
         if (input instanceof String) {
             return ((String) input).toUpperCase(Locale.ENGLISH);
         } else {
-            return input.toString().toUpperCase(Locale.ENGLISH);
+            return self.getObjectPrinter().converToString(input).toUpperCase(Locale.ENGLISH);
         }
     }
 
