@@ -84,7 +84,7 @@ public class EscapeFilter implements Filter {
         if (inputObject == null || inputObject instanceof SafeString) {
             return inputObject;
         }
-        String input =  self.getObjectPrinter().converToString(inputObject);
+        String input = self.getObjectPrinter().converToString(inputObject);
 
         String strategy = defaultStrategy;
 

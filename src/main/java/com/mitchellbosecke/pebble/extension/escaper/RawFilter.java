@@ -25,7 +25,9 @@ public class RawFilter implements Filter {
         if(inputObject instanceof String){
             return new SafeString((String) inputObject);
         }
-        return inputObject;
+        else {
+        	return new SafeString(self.getObjectPrinter().converToString(inputObject));
+        }
     }
 
 }

@@ -34,7 +34,7 @@ public class ObjectPrinterTest {
 	public void fullTest() throws PebbleException, IOException {
 
 		PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false)
-				.extension(new TestExtension()).build();
+				.extension(new TestExtension("expected")).build();
 
 		PebbleTemplate template = pebble.getTemplate("{{ input }}");
 
@@ -50,7 +50,7 @@ public class ObjectPrinterTest {
 	public void fullTestRaw() throws PebbleException, IOException {
 
 		PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false)
-				.extension(new TestExtension()).build();
+				.extension(new TestExtension("<p>expected</p>")).build();
 
 		PebbleTemplate template = pebble.getTemplate("{{ input | raw }}");
 
@@ -58,7 +58,7 @@ public class ObjectPrinterTest {
 		context.put("input", new SimpleType());
 		Writer writer = new StringWriter();
 		template.evaluate(writer, context);
-		assertEquals("expected", writer.toString());
+		assertEquals("<p>expected</p>", writer.toString());
 
 	}
 
@@ -69,7 +69,7 @@ public class ObjectPrinterTest {
 	 */
 	@Test
 	public void simpleTest() throws IOException {
-		Collection<SimplePrinter> printers = Collections.singleton(new SimplePrinter());
+		Collection<SimplePrinter> printers = Collections.singleton(new SimplePrinter("expected"));
 		ObjectPrinter printer = new ObjectPrinter(printers);
 
 		StringWriter writer = new StringWriter();
@@ -90,6 +90,12 @@ public class ObjectPrinterTest {
 
 	private static final class SimplePrinter implements ObjectPrintStrategy {
 
+		private final String output;
+
+		SimplePrinter(String output) {
+			this.output = output;
+		}
+
 		@Override
 		public boolean supports(Class<?> objectType) {
 			return SimpleType.class.isAssignableFrom(objectType);
@@ -97,17 +103,23 @@ public class ObjectPrinterTest {
 
 		@Override
 		public void print(Object object, Writer writer) throws IOException {
-			writer.write("expected");
+			writer.write(this.output);
 		}
 
 	}
 
 	private static class TestExtension extends AbstractExtension {
 
+		private final String output;
+
+		TestExtension(String output) {
+			this.output = output;
+		}
+
 		@Override
 		public List<ObjectPrintStrategy> getObjectPrintStrategies() {
 			List<ObjectPrintStrategy> strategies = new ArrayList<>();
-			strategies.add(new SimplePrinter());
+			strategies.add(new SimplePrinter(this.output));
 			return strategies;
 		}
 	}
