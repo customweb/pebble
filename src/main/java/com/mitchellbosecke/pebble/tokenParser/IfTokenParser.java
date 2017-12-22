@@ -45,7 +45,12 @@ public class IfTokenParser extends AbstractTokenParser {
         BodyNode elseBody = null;
         boolean end = false;
         while (!end) {
-            switch (stream.current().getValue()) {
+            String nextToken = stream.current().getValue();
+            if (nextToken == null) {
+                throwParsingException(stream.current().getLineNumber(), stream.getFilename());
+            }
+
+            switch (nextToken) {
             case "else":
                 stream.next();
                 stream.expect(Token.Type.EXECUTE_END);
@@ -64,16 +69,21 @@ public class IfTokenParser extends AbstractTokenParser {
                 stream.next();
                 end = true;
                 break;
+
             default:
-                throw new ParserException(
-                        null,
-                        String.format("Unexpected end of template. Pebble was looking for the following tags \"else\", \"elseif\", or \"endif\""),
-                        stream.current().getLineNumber(), stream.getFilename());
+               throwParsingException(stream.current().getLineNumber(), stream.getFilename());
             }
         }
 
         stream.expect(Token.Type.EXECUTE_END);
         return new IfNode(lineNumber, conditionsWithBodies, elseBody);
+    }
+
+    private void throwParsingException(int lineNumber, String fileName) throws ParserException {
+        throw new ParserException(
+                null,
+                String.format("Unexpected end of template. Pebble was looking for the following tags \"else\", \"elseif\", or \"endif\""),
+                lineNumber, fileName);
     }
 
     private StoppingCondition decideIfFork = new StoppingCondition() {

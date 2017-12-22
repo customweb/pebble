@@ -191,4 +191,14 @@ public class ParsingOdditiesTest extends AbstractTest {
         assertEquals("te'st", writer.toString());
     }
 
+    @Test(expected = ParserException.class)
+    public void testUnclosedIf() throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false).build();
+
+        PebbleTemplate template = pebble.getTemplate("{% if true %}something");
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer);
+    }
+
 }
