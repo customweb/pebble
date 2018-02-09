@@ -39,7 +39,11 @@ public class FirstFilter implements Filter {
 
         if (input instanceof String) {
             String inputString = (String) input;
-            return inputString.charAt(0);
+            if (inputString.length() > 0) {
+            	return inputString.charAt(0);
+            } else {
+            	return null;
+            }
         }
 
         if (input.getClass().isArray()) {
@@ -47,7 +51,11 @@ public class FirstFilter implements Filter {
             return length > 0 ? Array.get(input, 0) : null;
         } else if (input instanceof Collection) {
             Collection<?> inputCollection = (Collection<?>) input;
-            return inputCollection.iterator().next();
+            if (inputCollection.size() > 0) {
+            	return inputCollection.iterator().next();
+            } else {
+            	return null;
+            }
         } else {
             throw new PebbleException(null,
                     "The 'first' filter expects that the input is either a collection, an array or a string.",
