@@ -3,7 +3,7 @@ package com.mitchellbosecke.pebble;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.error.RootAttributeNotFoundException;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -40,8 +40,8 @@ public class StrictModeTest extends AbstractTest {
             template.evaluate(writer, context);
             Assert.fail("Exception " + RootAttributeNotFoundException.class.getCanonicalName() + " is expected.");
         } catch (RootAttributeNotFoundException e) {
-            Assert.assertEquals(e.getFileName(), "templates/template.strictModeComplexExpression.peb");
-            Assert.assertEquals(e.getLineNumber(), 2);
+            Assert.assertEquals("templates/template.strictModeComplexExpression.peb", e.getFileName());
+            Assert.assertEquals(new Integer(2), e.getLineNumber());
         }
     }
 
@@ -64,7 +64,7 @@ public class StrictModeTest extends AbstractTest {
             Assert.fail("Exception " + RootAttributeNotFoundException.class.getCanonicalName() + " is expected.");
         } catch (RootAttributeNotFoundException e) {
             Assert.assertEquals("templates/template.strictModeSimpleExpression.peb", e.getFileName());
-            Assert.assertEquals(2, e.getLineNumber());
+            Assert.assertEquals(new Integer(2), e.getLineNumber());
         }
     }
 

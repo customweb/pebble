@@ -33,7 +33,7 @@ public class ArgumentsNodeTest extends AbstractTest{
         }
         catch(PebbleException e) {
             Assert.assertEquals("{{ 'This is a test of the abbreviate filter' | abbreviate(16, 10) }}", e.getFileName());
-            Assert.assertEquals(1, e.getLineNumber());
+            Assert.assertEquals(new Integer(1), e.getLineNumber());
         }
 
     }
