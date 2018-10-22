@@ -201,4 +201,14 @@ public class ParsingOdditiesTest extends AbstractTest {
         template.evaluate(writer);
     }
 
+    @Test(expected = PebbleException.class)
+    public void testWrongIncludeNameType() throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false).build();
+
+        PebbleTemplate template = pebble.getTemplate("{% include true %}");
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer);
+    }
+
 }

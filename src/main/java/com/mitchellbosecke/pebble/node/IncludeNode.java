@@ -35,7 +35,11 @@ public class IncludeNode extends AbstractRenderableNode {
     @Override
     public void render(PebbleTemplateImpl self, Writer writer, EvaluationContext context) throws PebbleException,
             IOException {
-        String templateName = (String) includeExpression.evaluate(self, context);
+        Object templateName = includeExpression.evaluate(self, context);
+
+        if (!(templateName instanceof String)) {
+            throw new PebbleException(null, "The name of the included template must be a string.", getLineNumber(), self.getName());
+        }
 
         Map<?, ?> map = Collections.emptyMap();
         if (this.mapExpression != null) {
@@ -45,11 +49,10 @@ public class IncludeNode extends AbstractRenderableNode {
         if (templateName == null) {
             throw new PebbleException(
                     null,
-                    String.format(
-                            "The template name in an include tag evaluated to NULL. If the template name is static, make sure to wrap it in quotes.",
-                            templateName), getLineNumber(), self.getName());
+                    "The template name in an include tag evaluated to NULL. If the template name is static, make sure to wrap it in quotes.",
+                    getLineNumber(), self.getName());
         }
-        self.includeTemplate(writer, context, templateName, map);
+        self.includeTemplate(writer, context,  (String) templateName, map);
     }
 
     @Override
