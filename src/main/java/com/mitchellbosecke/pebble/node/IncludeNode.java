@@ -15,6 +15,7 @@ import java.util.Map;
 
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.extension.NodeVisitor;
+import com.mitchellbosecke.pebble.node.expression.ContextVariableExpression;
 import com.mitchellbosecke.pebble.node.expression.Expression;
 import com.mitchellbosecke.pebble.node.expression.MapExpression;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
@@ -25,11 +26,21 @@ public class IncludeNode extends AbstractRenderableNode {
     private final Expression<?> includeExpression;
 
     private final MapExpression mapExpression;
+    
+    private final ContextVariableExpression variableExpression;
 
     public IncludeNode(int lineNumber, Expression<?> includeExpression, MapExpression mapExpression) {
         super(lineNumber);
         this.includeExpression = includeExpression;
         this.mapExpression = mapExpression;
+        this.variableExpression = null;
+    }
+    
+    public IncludeNode(int lineNumber, Expression<?> includeExpression, ContextVariableExpression variableExpression) {
+        super(lineNumber);
+        this.includeExpression = includeExpression;
+        this.mapExpression = null;
+        this.variableExpression = variableExpression;
     }
 
     @Override
@@ -44,6 +55,13 @@ public class IncludeNode extends AbstractRenderableNode {
         Map<?, ?> map = Collections.emptyMap();
         if (this.mapExpression != null) {
             map = this.mapExpression.evaluate(self, context);
+        } else if (this.variableExpression != null) {
+        	Object variable = this.variableExpression.evaluate(self, context);
+        	if (variable instanceof Map<?, ?>) {
+        		map = (Map<?, ?>) variable;
+        	} else {
+        		throw new PebbleException(null, "The include parameter needs to be a map.", getLineNumber(), self.getName());
+        	}
         }
 
         if (templateName == null) {

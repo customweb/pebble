@@ -13,6 +13,7 @@ import com.mitchellbosecke.pebble.lexer.Token;
 import com.mitchellbosecke.pebble.lexer.TokenStream;
 import com.mitchellbosecke.pebble.node.IncludeNode;
 import com.mitchellbosecke.pebble.node.RenderableNode;
+import com.mitchellbosecke.pebble.node.expression.ContextVariableExpression;
 import com.mitchellbosecke.pebble.node.expression.Expression;
 import com.mitchellbosecke.pebble.node.expression.MapExpression;
 import com.mitchellbosecke.pebble.parser.Parser;
@@ -32,6 +33,7 @@ public class IncludeTokenParser extends AbstractTokenParser {
 
         Token current = stream.current();
         MapExpression mapExpression = null;
+        ContextVariableExpression variableExpression = null;
 
         // We check if there is an optional 'with' parameter on the include tag.
         if (current.getType().equals(Token.Type.NAME) && current.getValue().equals("with")) {
@@ -43,6 +45,8 @@ public class IncludeTokenParser extends AbstractTokenParser {
 
             if (parsedExpression instanceof MapExpression) {
                 mapExpression = (MapExpression) parsedExpression;
+            } else if (parsedExpression instanceof ContextVariableExpression) {
+            	variableExpression = (ContextVariableExpression) parsedExpression;
             } else {
                 throw new ParserException(null, String.format("Unexpected expression '%1s'.", parsedExpression
                         .getClass().getCanonicalName()), token.getLineNumber(), stream.getFilename());
@@ -52,7 +56,11 @@ public class IncludeTokenParser extends AbstractTokenParser {
 
         stream.expect(Token.Type.EXECUTE_END);
 
-        return new IncludeNode(lineNumber, includeExpression, mapExpression);
+        if (mapExpression != null) {
+        	return new IncludeNode(lineNumber, includeExpression, mapExpression);
+        } else {
+        	return new IncludeNode(lineNumber, includeExpression, variableExpression);
+        }
     }
 
     @Override
