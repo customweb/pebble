@@ -1,0 +1,7 @@
+{# used by IncludeWithParameterTest.testIncludeWithAttribute #}
+{% set variable = {
+	'context' : {
+		'foo' : 'bar'
+	}
+} %}
+{% include './template.includeWithAttribute2.peb' with variable.context %}
