@@ -1,0 +1,2 @@
+{# used by IncludeWithParameterTest.testIncludeWithVariable #}
+{% include './template.includeWithVariable2.peb' with includeContext %}
