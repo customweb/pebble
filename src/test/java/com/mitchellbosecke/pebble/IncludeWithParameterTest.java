@@ -73,5 +73,19 @@ public class IncludeWithParameterTest extends AbstractTest {
 
         assertEquals(expectedOutput, writer.toString());
     }
+    
+    @Test
+    public void testIncludeWithAttribute() throws PebbleException, IOException {
+    	PebbleEngine pebble = new PebbleEngine.Builder().strictVariables(false).build();
+        PebbleTemplate template = pebble.getTemplate("templates/template.includeWithAttribute1.peb");
+        Map<String, Object> context = new HashMap<>();
+        
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+
+        String expectedOutput = "bar";
+
+        assertEquals(expectedOutput, writer.toString());
+    }
 
 }

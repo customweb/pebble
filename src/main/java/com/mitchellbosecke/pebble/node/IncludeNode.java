@@ -17,6 +17,7 @@ import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.extension.NodeVisitor;
 import com.mitchellbosecke.pebble.node.expression.ContextVariableExpression;
 import com.mitchellbosecke.pebble.node.expression.Expression;
+import com.mitchellbosecke.pebble.node.expression.GetAttributeExpression;
 import com.mitchellbosecke.pebble.node.expression.MapExpression;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
@@ -28,12 +29,15 @@ public class IncludeNode extends AbstractRenderableNode {
     private final MapExpression mapExpression;
     
     private final ContextVariableExpression variableExpression;
+    
+    private final GetAttributeExpression attributeExpression;
 
     public IncludeNode(int lineNumber, Expression<?> includeExpression, MapExpression mapExpression) {
         super(lineNumber);
         this.includeExpression = includeExpression;
         this.mapExpression = mapExpression;
         this.variableExpression = null;
+        this.attributeExpression = null;
     }
     
     public IncludeNode(int lineNumber, Expression<?> includeExpression, ContextVariableExpression variableExpression) {
@@ -41,6 +45,15 @@ public class IncludeNode extends AbstractRenderableNode {
         this.includeExpression = includeExpression;
         this.mapExpression = null;
         this.variableExpression = variableExpression;
+        this.attributeExpression = null;
+    }
+    
+    public IncludeNode(int lineNumber, Expression<?> includeExpression,GetAttributeExpression attributeExpression) {
+        super(lineNumber);
+        this.includeExpression = includeExpression;
+        this.mapExpression = null;
+        this.variableExpression = null;
+        this.attributeExpression = attributeExpression;
     }
 
     @Override
@@ -62,14 +75,15 @@ public class IncludeNode extends AbstractRenderableNode {
         	} else {
         		throw new PebbleException(null, "The include parameter needs to be a map.", getLineNumber(), self.getName());
         	}
+        } else if (this.attributeExpression != null) {
+        	Object variable = this.attributeExpression.evaluate(self, context);
+        	if (variable instanceof Map<?, ?>) {
+        		map = (Map<?, ?>) variable;
+        	} else {
+        		throw new PebbleException(null, "The include parameter needs to be a map.", getLineNumber(), self.getName());
+        	}
         }
 
-        if (templateName == null) {
-            throw new PebbleException(
-                    null,
-                    "The template name in an include tag evaluated to NULL. If the template name is static, make sure to wrap it in quotes.",
-                    getLineNumber(), self.getName());
-        }
         self.includeTemplate(writer, context,  (String) templateName, map);
     }
 
