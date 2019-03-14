@@ -513,6 +513,19 @@ public class ArraySyntaxTest extends AbstractTest {
     }
 
     @Test
+    public void testEmptyTest4() throws PebbleException, IOException {
+
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(true).build();
+
+        String source = "{% if undefinedVariable is not empty %}{{ 'test failed' }}{% else %}{{ 'test passed' }}{% endif %}";
+        PebbleTemplate template = pebble.getTemplate(source);
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, new HashMap<String, Object>());
+        assertEquals("test passed", writer.toString());
+    }
+
+    @Test
     public void testIterableTest() throws PebbleException, IOException {
 
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(false).build();

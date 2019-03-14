@@ -12,6 +12,7 @@ import com.mitchellbosecke.pebble.error.AttributeNotFoundException;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.extension.Test;
 import com.mitchellbosecke.pebble.extension.core.DefinedTest;
+import com.mitchellbosecke.pebble.extension.core.EmptyTest;
 import com.mitchellbosecke.pebble.node.ArgumentsNode;
 import com.mitchellbosecke.pebble.node.TestInvocationExpression;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
@@ -48,7 +49,7 @@ public class PositiveTestExpression extends BinaryExpression<Object> {
         // is not set, because this method should exactly test this. Hence a
         // generic solution to allow other tests to reuse this feature make no
         // sense.
-        if (test instanceof DefinedTest) {
+        if (test instanceof DefinedTest || test instanceof EmptyTest) {
             Object input = null;
             try {
                 input = getLeftExpression().evaluate(self, context);
