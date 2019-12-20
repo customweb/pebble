@@ -9,6 +9,7 @@
 package com.mitchellbosecke.pebble;
 
 import com.mitchellbosecke.pebble.error.AttributeNotFoundException;
+import com.mitchellbosecke.pebble.error.ClassAccessException;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.error.RootAttributeNotFoundException;
 import com.mitchellbosecke.pebble.loader.StringLoader;
@@ -564,6 +565,141 @@ public class GetAttributeTest extends AbstractTest {
         assertEquals("hello ", writer.toString());
     }
 
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_StrictVariableOff_Property()
+            throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader())
+                .strictVariables(false)
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ object.class }}]");
+        Map<String, Object> context = new HashMap<>();
+        context.put("object", new SimpleObject());
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_StrictVariableOff_Method()
+            throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader())
+                .strictVariables(false)
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ object.getClass() }}]");
+        Map<String, Object> context = new HashMap<>();
+        context.put("object", new SimpleObject());
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_StrictVariableOn_Property()
+            throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader())
+                .strictVariables(true)
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ object.class }}]");
+        Map<String, Object> context = new HashMap<>();
+        context.put("object", new SimpleObject());
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_StrictVariableOn_Method()
+            throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader())
+                .strictVariables(true)
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ object.getClass() }}]");
+        Map<String, Object> context = new HashMap<>();
+        context.put("object", new SimpleObject());
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_AllowUnsafeMethodsOffIsCaseInsensitive_Property()
+            throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder()
+                .loader(new StringLoader())
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ object.ClAsS }}]");
+        Map<String, Object> context = new HashMap<>();
+        context.put("object", new SimpleObject());
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_AllowUnsafeMethodsOffIsCaseInsensitive_Method()
+            throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder()
+                .loader(new StringLoader())
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ object.GeTcLAsS() }}]");
+        Map<String, Object> context = new HashMap<>();
+        context.put("object", new SimpleObject());
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_AllowUnsafeMethodsOffForMethodNotify_thenThrowException()
+            throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder()
+                .loader(new StringLoader())
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ object.notify() }}]");
+        Map<String, Object> context = new HashMap<>();
+        context.put("object", new SimpleObject());
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_TypePropertyOnBoxedPrimitive() throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder()
+                .loader(new StringLoader())
+                .build();
+
+        PebbleTemplate template = pebble.getTemplate("hello [{{ (1).TYPE.forName('java.lang.String') }}]");
+        Map<String, Object> context = new HashMap<>();
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
+    @Test(expected = ClassAccessException.class)
+    public void testAccessingClass_ProtectionDomainMethod() throws PebbleException, IOException {
+        PebbleEngine pebble = new PebbleEngine.Builder()
+                .loader(new StringLoader())
+                .build();
+
+        String templateText =
+                "{%set daInt = (1).TYPE.protectionDomain.getPermissions.elementsAsStream.findFirst().get.hashCode.TYPE.getModule %}\n" +
+                "{{(1).TYPE.protectionDomain.getPermissions.elementsAsStream.findFirst().get.hashCode.TYPE.forName(daInt,'java.lang.Runtime') }}";
+
+        PebbleTemplate template = pebble.getTemplate(templateText);
+        Map<String, Object> context = new HashMap<>();
+
+        Writer writer = new StringWriter();
+        template.evaluate(writer, context);
+    }
+
     public class PrimitiveArguments {
 
         public String getStringFromLong(long id) {
@@ -578,5 +714,4 @@ public class GetAttributeTest extends AbstractTest {
             return String.valueOf(bool);
         }
     }
-
 }

@@ -15,6 +15,7 @@
 package com.mitchellbosecke.pebble.node.expression;
 
 import com.mitchellbosecke.pebble.error.AttributeNotFoundException;
+import com.mitchellbosecke.pebble.error.ClassAccessException;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.error.RootAttributeNotFoundException;
 import com.mitchellbosecke.pebble.extension.NodeVisitor;
@@ -46,6 +47,8 @@ public class GetAttributeExpression implements Expression<Object> {
     private final String filename;
 
     private final int lineNumber;
+
+    private final UnsafeMethods unsafeMethods = new UnsafeMethods();
 
     /**
      * Potentially cached on first evaluation.
@@ -254,7 +257,7 @@ public class GetAttributeExpression implements Expression<Object> {
      * @param parameterTypes
      * @return
      */
-    private Member reflect(Object object, String attributeName, Class<?>[] parameterTypes) {
+    private Member reflect(Object object, String attributeName, Class<?>[] parameterTypes) throws ClassAccessException {
 
         Class<?> clazz = object.getClass();
 
@@ -305,7 +308,11 @@ public class GetAttributeExpression implements Expression<Object> {
      * @param requiredTypes
      * @return
      */
-    private Method findMethod(Class<?> clazz, String name, Class<?>[] requiredTypes) {
+    private Method findMethod(Class<?> clazz, String name, Class<?>[] requiredTypes) throws ClassAccessException {
+        if (name.equalsIgnoreCase("getClass")) {
+            throw new ClassAccessException(lineNumber, filename);
+        }
+
         Method result = null;
 
         Method[] candidates = clazz.getMethods();
@@ -334,7 +341,18 @@ public class GetAttributeExpression implements Expression<Object> {
                 break;
             }
         }
+
+        if (result != null) {
+            verifyUnsafeMethod(filename, lineNumber, result);
+        }
+
         return result;
+    }
+
+    private void verifyUnsafeMethod(String filename, int lineNumber, Method method) throws ClassAccessException {
+        if (this.unsafeMethods.isUnsafeMethod(method)) {
+            throw new ClassAccessException(lineNumber, filename);
+        }
     }
 
     /**
