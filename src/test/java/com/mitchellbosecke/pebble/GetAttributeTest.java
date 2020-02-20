@@ -13,20 +13,56 @@ import com.mitchellbosecke.pebble.error.ClassAccessException;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.error.RootAttributeNotFoundException;
 import com.mitchellbosecke.pebble.loader.StringLoader;
+import com.mitchellbosecke.pebble.node.expression.UnsafeMethods;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 public class GetAttributeTest extends AbstractTest {
+
+    public Method reflectPrivateMethod(Class className, String methodName) throws NoSuchMethodException {
+        Method method = className.getDeclaredMethod(methodName);
+        method.setAccessible(true);
+        return method;
+    }
+
+    public Field reflectPrivateField(Class className, String fieldName)
+            throws IllegalAccessException, NoSuchFieldException {
+        Field field = className.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field;
+    }
+
+    @Test
+    public void testWhiteList() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+
+        //TODO:
+        Field path_field = UnsafeMethods.class.getDeclaredField("UNSAFE_METHODS_PROPERTIES");
+        path_field.setAccessible(true);
+        String s = (String) path_field.get("UNSAFE_METHODS_PROPERTIES");
+        System.out.println("PropLoc: "+s);
+
+        Method path_method = UnsafeMethods.class.getDeclaredMethod("loadProperties", String.class);
+        path_method.setAccessible(true);
+        Properties m = (Properties) path_method.invoke("loadProperties", s);
+        System.out.println("PropSize: "+m.size());
+
+        /*
+        PebbleEngine pebbleEngine = new PebbleEngine(
+                null, null,false,
+                null,null, null,null,
+                null,properties);
+        */
+    }
 
     @Test
     public void testOneLayerAttributeNesting() throws PebbleException, IOException {

@@ -9,10 +9,7 @@
 package com.mitchellbosecke.pebble;
 
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -70,17 +67,27 @@ public class PebbleEngine {
 
 	private final ObjectPrinter objectPrinter;
 
+	private final Properties whitelist;
+
 	/**
 	 * Constructor for the Pebble Engine given an instantiated Loader. This method
 	 * does only load those userProvidedExtensions listed here.
 	 *
-	 * @param loader     The template loader for this engine
-	 * @param syntax     the syntax to use for parsing the templates.
+	 * @param loader     The template loader for this engine.
+	 * @param syntax     The syntax to use for parsing the templates.
 	 * @param extensions The userProvidedExtensions which should be loaded.
+	 * @param whitelist  The whitelist provided for method checking.
 	 */
-	public PebbleEngine(Loader<?> loader, Syntax syntax, boolean strictVariables, Locale defaultLocale,
-			Cache<BaseTagCacheKey, Object> tagCache, Cache<Object, PebbleTemplate> templateCache,
-			ExecutorService executorService, Collection<? extends Extension> extensions) {
+	public PebbleEngine(
+			Loader<?> loader,
+			Syntax syntax,
+			boolean strictVariables,
+			Locale defaultLocale,
+			Cache<BaseTagCacheKey, Object> tagCache,
+			Cache<Object, PebbleTemplate> templateCache,
+			ExecutorService executorService,
+			Collection<? extends Extension> extensions,
+			Properties whitelist) {
 
 		this.loader = loader;
 		this.syntax = syntax;
@@ -91,6 +98,7 @@ public class PebbleEngine {
 		this.templateCache = templateCache;
 		this.extensionRegistry = new ExtensionRegistry(extensions);
 		this.objectPrinter = new ObjectPrinter(this.extensionRegistry);
+		this.whitelist = whitelist;
 	}
 
 	/**
@@ -206,6 +214,14 @@ public class PebbleEngine {
 	}
 
 	/**
+	 *
+	 *
+	 */
+	public Properties getWhitelist() {
+		return whitelist;
+	}
+
+	/**
 	 * Returns the default locale
 	 *
 	 * @return The default locale
@@ -283,6 +299,8 @@ public class PebbleEngine {
 		private Cache<BaseTagCacheKey, Object> tagCache;
 
 		private EscaperExtension escaperExtension = new EscaperExtension();
+
+		private Properties whitelist;
 
 		/**
 		 * Creates the builder.
@@ -440,6 +458,17 @@ public class PebbleEngine {
 		}
 
 		/**
+		 * Attaches a properties file to the builder params
+		 *
+		 * @param whitelist properties file
+		 * @return the builder object
+		 * */
+		public Builder whitelist(Properties whitelist){
+			this.whitelist = whitelist;
+			return this;
+		}
+
+		/**
 		 * Creates the PebbleEngine instance.
 		 *
 		 * @return A PebbleEngine object that can be used to create PebbleTemplate
@@ -481,8 +510,12 @@ public class PebbleEngine {
 				tagCache = CacheBuilder.newBuilder().maximumSize(0).build();
 			}
 
+			//Whitelist
+			Properties testMe = whitelist;
+			System.out.println(testMe.isEmpty());
+
 			return new PebbleEngine(loader, syntax, strictVariables, defaultLocale, tagCache, templateCache,
-					executorService, extensions);
+					executorService, extensions, null);
 		}
 	}
 }

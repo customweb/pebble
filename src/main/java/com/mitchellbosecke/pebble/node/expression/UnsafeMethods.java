@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
  * they would otherwise cause a security issue, e.g. being able to instantiate an instance of an arbitrary class
  * from within a template and so on.
  */
-class UnsafeMethods {
+public class UnsafeMethods {
 
     private static final String UNSAFE_METHODS_PROPERTIES = "/unsafeMethods.properties";
     private static final Set<Method> UNSAFE_METHODS = createUnsafeMethodsSet();
