@@ -8,14 +8,19 @@
  ******************************************************************************/
 package com.mitchellbosecke.pebble;
 
+import com.google.common.cache.Cache;
 import com.mitchellbosecke.pebble.error.AttributeNotFoundException;
 import com.mitchellbosecke.pebble.error.ClassAccessException;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.error.RootAttributeNotFoundException;
+import com.mitchellbosecke.pebble.extension.Extension;
+import com.mitchellbosecke.pebble.loader.Loader;
 import com.mitchellbosecke.pebble.loader.StringLoader;
 import com.mitchellbosecke.pebble.node.expression.UnsafeMethods;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import org.junit.Test;
+
+import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -45,23 +50,28 @@ public class GetAttributeTest extends AbstractTest {
     @Test
     public void testWhiteList() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
 
-        //TODO:
-        Field path_field = UnsafeMethods.class.getDeclaredField("UNSAFE_METHODS_PROPERTIES");
+        Class unsafeMethods = UnsafeMethods.class;
+        String pathField = "UNSAFE_METHODS_PROPERTIES";
+        String loadPropertiesMethod = "loadProperties";
+
+        Field path_field = unsafeMethods.getDeclaredField(pathField);
         path_field.setAccessible(true);
-        String s = (String) path_field.get("UNSAFE_METHODS_PROPERTIES");
-        System.out.println("PropLoc: "+s);
+        String filePath = (String) path_field.get(pathField);
+        System.out.println("PropLoc: " + filePath);
 
-        Method path_method = UnsafeMethods.class.getDeclaredMethod("loadProperties", String.class);
+        Method path_method = unsafeMethods.getDeclaredMethod(loadPropertiesMethod, String.class);
         path_method.setAccessible(true);
-        Properties m = (Properties) path_method.invoke("loadProperties", s);
-        System.out.println("PropSize: "+m.size());
+        Properties properties = (Properties) path_method.invoke(loadPropertiesMethod, filePath);
+        System.out.println("PropSize: " + properties.size());
 
-        /*
-        PebbleEngine pebbleEngine = new PebbleEngine(
-                null, null,false,
-                null,null, null,null,
-                null,properties);
-        */
+        PebbleEngine.Builder builder = new PebbleEngine.Builder();
+        builder.loader(mock(Loader.class));
+        builder.extension(mock(Extension.class));
+        builder.strictVariables(true);
+        builder.templateCache(mock(Cache.class));
+        builder.whitelist(properties);
+        builder.build();
+
     }
 
     @Test
@@ -450,6 +460,7 @@ public class GetAttributeTest extends AbstractTest {
         public final String name = "Name";
         public final String surname = "Surname";
     }
+
     @Test
     public void testAccessingValueWithSubscriptInLoop() throws PebbleException, IOException {
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(true).build();
@@ -576,7 +587,7 @@ public class GetAttributeTest extends AbstractTest {
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(true).build();
 
         PebbleTemplate template = pebble.getTemplate("{{ obj.getStringFromLong(1) }} {{ obj.getStringFromLongs(1,2) }}"
-            + " {{ obj.getStringFromBoolean(true) }}");
+                + " {{ obj.getStringFromBoolean(true) }}");
 
         Map<String, Object> context = new HashMap<>();
         context.put("obj", new PrimitiveArguments());
@@ -586,7 +597,7 @@ public class GetAttributeTest extends AbstractTest {
 
         assertEquals("1 1 2 true", writer.toString());
     }
-    
+
     @Test
     public void testBeanMethodWithNullArgument() throws PebbleException, IOException {
         PebbleEngine pebble = new PebbleEngine.Builder().loader(new StringLoader()).strictVariables(true).build();
@@ -727,7 +738,7 @@ public class GetAttributeTest extends AbstractTest {
 
         String templateText =
                 "{%set daInt = (1).TYPE.protectionDomain.getPermissions.elementsAsStream.findFirst().get.hashCode.TYPE.getModule %}\n" +
-                "{{(1).TYPE.protectionDomain.getPermissions.elementsAsStream.findFirst().get.hashCode.TYPE.forName(daInt,'java.lang.Runtime') }}";
+                        "{{(1).TYPE.protectionDomain.getPermissions.elementsAsStream.findFirst().get.hashCode.TYPE.forName(daInt,'java.lang.Runtime') }}";
 
         PebbleTemplate template = pebble.getTemplate(templateText);
         Map<String, Object> context = new HashMap<>();
