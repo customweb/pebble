@@ -3,12 +3,7 @@ package com.mitchellbosecke.pebble.node.expression;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Handles a separate list of safe and unsafe methods in regards to a high security issue that relates to
@@ -18,9 +13,12 @@ import java.util.StringTokenizer;
 class VerifyMethod {
 
     private static final String UNSAFE_METHODS_PROPERTIES = "/unsafeMethods.properties";
-    private static final Set<Method> UNSAFE_METHODS = createUnsafeMethodsSet();
+    private static Set<Method> UNSAFE_METHODS = new HashSet<>();
 
-    VerifyMethod() { }
+
+    VerifyMethod() {
+        createUnsafeMethodsSet();
+    }
 
     //----------------------------------------------------------------------------------------------------------------//
     // TODO: Check for the unsafe exceptions, refactor, and reverse the logic for safe (whitelist) methods.
@@ -47,8 +45,7 @@ class VerifyMethod {
         return props;
     }
 
-    @Deprecated
-    private static final Set<Method> createUnsafeMethodsSet() {
+    private static void createUnsafeMethodsSet() {
         try {
             Properties props = loadProperties(UNSAFE_METHODS_PROPERTIES);
             Set<Method> set = new HashSet<>(props.size() * 4 / 3, 1f);
@@ -56,7 +53,7 @@ class VerifyMethod {
             for (Object key : props.keySet()) {
                 set.add(parseMethodSpec((String) key, primClasses));
             }
-            return set;
+            UNSAFE_METHODS = Collections.unmodifiableSet(set);
         } catch (Exception e) {
             throw new RuntimeException("Could not load unsafe method set", e);
         }
