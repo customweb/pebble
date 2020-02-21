@@ -510,9 +510,7 @@ public class PebbleEngine {
 				tagCache = CacheBuilder.newBuilder().maximumSize(0).build();
 			}
 
-			//Whitelist
-			Properties testMe = whitelist;
-			System.out.println(testMe.isEmpty());
+			System.out.println(whitelist);
 
 			return new PebbleEngine(loader, syntax, strictVariables, defaultLocale, tagCache, templateCache,
 					executorService, extensions, null);

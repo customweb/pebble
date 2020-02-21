@@ -20,20 +20,18 @@ import com.mitchellbosecke.pebble.node.expression.UnsafeMethods;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import org.junit.Test;
 
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.*;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class GetAttributeTest extends AbstractTest {
 
@@ -58,7 +56,7 @@ public class GetAttributeTest extends AbstractTest {
         System.out.println("PropSize: " + properties.size());
         assertTrue(properties.size() > 0);
 
-        // Construct Builder
+        // Construct Builder with Whitelist
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(mock(Loader.class));
         builder.extension(mock(Extension.class));
