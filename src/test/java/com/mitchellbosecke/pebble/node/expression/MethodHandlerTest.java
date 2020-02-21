@@ -15,14 +15,14 @@ import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-public class VerifyMethodTest {
+public class MethodHandlerTest {
 
     @Test
     public void testPassingPropertiesIntoPebbleLibraryConstructor()
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
 
         // Variables
-        Class unsafeMethods = VerifyMethod.class;
+        Class unsafeMethods = MethodHandler.class;
         String pathField = "UNSAFE_METHODS_PROPERTIES";
         String loadPropertiesMethod = "loadProperties";
 
@@ -33,7 +33,7 @@ public class VerifyMethodTest {
         assertFalse(filePath.isEmpty());
 
         // Unlock and test private class
-        Method path_method = VerifyMethod.class.getDeclaredMethod(loadPropertiesMethod, String.class);
+        Method path_method = MethodHandler.class.getDeclaredMethod(loadPropertiesMethod, String.class);
         path_method.setAccessible(true);
         Properties properties = (Properties) path_method.invoke(loadPropertiesMethod, filePath);
         assertTrue(properties.size() > 0);

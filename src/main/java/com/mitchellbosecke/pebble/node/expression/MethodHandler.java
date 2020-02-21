@@ -10,17 +10,17 @@ import java.util.*;
  * being able to instantiate an instance of an arbitrary class from within a template.
  */
 
-class VerifyMethod {
+class MethodHandler {
 
     private static final String UNSAFE_METHODS_PROPERTIES = "/unsafeMethods.properties";
     private static Set<Method> UNSAFE_METHODS = new HashSet<>();
 
-
-    VerifyMethod() {
+    MethodHandler() {
         createUnsafeMethodsSet();
     }
 
     //----------------------------------------------------------------------------------------------------------------//
+    // TODO: Fetch the properties files from the int Class (PebbleEngine).
     // TODO: Check for the unsafe exceptions, refactor, and reverse the logic for safe (whitelist) methods.
     // TODO: Remove the blacklist functionality and review for whitelist testing purposes.
     //---------------------------------------------------------------------------------------------------------------//
@@ -35,7 +35,7 @@ class VerifyMethod {
         Properties props = new Properties();
         InputStream is = null;
         try {
-            is = VerifyMethod.class.getResourceAsStream(resource);
+            is = MethodHandler.class.getResourceAsStream(resource);
             props.load(is);
         } finally {
             if (is != null) {

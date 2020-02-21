@@ -48,7 +48,7 @@ public class GetAttributeExpression implements Expression<Object> {
 
     private final int lineNumber;
 
-    private final VerifyMethod verifyMethod = new VerifyMethod();
+    private final MethodHandler methodHandler = new MethodHandler();
 
     /**
      * Potentially cached on first evaluation.
@@ -353,7 +353,7 @@ public class GetAttributeExpression implements Expression<Object> {
     }
 
     private boolean unsafeMethod(Method method) {
-        return this.verifyMethod.isUnsafeMethod(method);
+        return this.methodHandler.isUnsafeMethod(method);
     }
 
     /**

@@ -462,11 +462,9 @@ public class PebbleEngine {
          * Attaches a properties file to the builder params
          *
          * @param whitelist properties file
-         * @return the builder object
          */
-        public Builder whitelist(Properties whitelist) {
+        public void whitelist(Properties whitelist) {
             this.whitelist = whitelist;
-            return this;
         }
 
         /**
@@ -512,7 +510,7 @@ public class PebbleEngine {
             }
 
             return new PebbleEngine(loader, syntax, strictVariables, defaultLocale, tagCache, templateCache,
-                    executorService, extensions, this.whitelist);
+                    executorService, extensions, whitelist);
         }
     }
 }
