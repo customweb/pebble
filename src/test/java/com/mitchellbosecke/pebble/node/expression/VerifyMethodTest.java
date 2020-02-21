@@ -16,8 +16,10 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 public class VerifyMethodTest {
+
     @Test
-    public void testPropertiesToConstructor() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+    public void testPassingPropertiesIntoPebbleLibraryConstructor()
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
 
         // Variables
         Class unsafeMethods = VerifyMethod.class;
@@ -46,4 +48,5 @@ public class VerifyMethodTest {
         PebbleEngine pebbleEngine = builder.build();
         assertTrue(pebbleEngine.getWhitelist().size() > 0);
     }
+
 }
