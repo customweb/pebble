@@ -48,7 +48,7 @@ public class GetAttributeExpression implements Expression<Object> {
 
     private final int lineNumber;
 
-    private final UnsafeMethods unsafeMethods = new UnsafeMethods();
+    private final VerifyMethod verifyMethod = new VerifyMethod();
 
     /**
      * Potentially cached on first evaluation.
@@ -313,8 +313,7 @@ public class GetAttributeExpression implements Expression<Object> {
             throw new ClassAccessException(lineNumber, filename);
         }
 
-        Method result = null;
-
+        Method method = null;
         Method[] candidates = clazz.getMethods();
 
         for (Method candidate : candidates) {
@@ -337,22 +336,24 @@ public class GetAttributeExpression implements Expression<Object> {
             }
 
             if (compatibleTypes) {
-                result = candidate;
+                method = candidate;
                 break;
             }
         }
 
-        if (result != null) {
-            verifyUnsafeMethod(filename, lineNumber, result);
+        if (method != null) {
+            if (unsafeMethod(method)){
+                throw new ClassAccessException(lineNumber, filename);
+            } else {
+                System.out.println("Whitelist added for: "+ method.getName());
+            }
         }
 
-        return result;
+        return method;
     }
 
-    private void verifyUnsafeMethod(String filename, int lineNumber, Method method) throws ClassAccessException {
-        if (this.unsafeMethods.isUnsafeMethod(method)) {
-            throw new ClassAccessException(lineNumber, filename);
-        }
+    private boolean unsafeMethod(Method method) {
+        return this.verifyMethod.isUnsafeMethod(method);
     }
 
     /**

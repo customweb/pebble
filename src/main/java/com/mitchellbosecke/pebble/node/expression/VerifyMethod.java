@@ -11,22 +11,44 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
- * Provides access to a blacklist of unsafe methods which are disallowed from being used in templates because
- * they would otherwise cause a security issue, e.g. being able to instantiate an instance of an arbitrary class
- * from within a template and so on.
+ * Handles a separate list of safe and unsafe methods in regards to a high security issue that relates to
+ * being able to instantiate an instance of an arbitrary class from within a template.
  */
 
-public class UnsafeMethods {
+class VerifyMethod {
 
     private static final String UNSAFE_METHODS_PROPERTIES = "/unsafeMethods.properties";
     private static final Set<Method> UNSAFE_METHODS = createUnsafeMethodsSet();
 
-    UnsafeMethods() { }
+    VerifyMethod() { }
 
+    //----------------------------------------------------------------------------------------------------------------//
+
+    // 1. Get the whitelist.properties into an "unmodifiable set" / "unmodifiable collection"
+
+    //---------------------------------------------------------------------------------------------------------------//
+
+    // @Deprecated // Still used for testing
     boolean isUnsafeMethod(Method method) {
         return UNSAFE_METHODS.contains(method);
     }
 
+    @Deprecated // Still used for testing
+    private static Properties loadProperties(String resource) throws IOException {
+        Properties props = new Properties();
+        InputStream is = null;
+        try {
+            is = VerifyMethod.class.getResourceAsStream(resource);
+            props.load(is);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+        return props;
+    }
+
+    @Deprecated
     private static final Set<Method> createUnsafeMethodsSet() {
         try {
             Properties props = loadProperties(UNSAFE_METHODS_PROPERTIES);
@@ -41,6 +63,7 @@ public class UnsafeMethods {
         }
     }
 
+    @Deprecated
     private static Method parseMethodSpec(String methodSpec, Map<String, Class> primClasses)
             throws ClassNotFoundException,
             NoSuchMethodException {
@@ -62,6 +85,7 @@ public class UnsafeMethods {
         return clazz.getMethod(methodName, argTypes);
     }
 
+    @Deprecated
     private static Map<String, Class> createPrimitiveClassesMap() {
         Map<String, Class> map = new HashMap<>();
         map.put("boolean", Boolean.TYPE);
@@ -75,17 +99,4 @@ public class UnsafeMethods {
         return map;
     }
 
-    private static Properties loadProperties(String resource) throws IOException {
-        Properties props = new Properties();
-        InputStream is = null;
-        try {
-            is = UnsafeMethods.class.getResourceAsStream(resource);
-            props.load(is);
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-        return props;
-    }
 }
