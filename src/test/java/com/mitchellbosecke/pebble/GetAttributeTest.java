@@ -20,6 +20,8 @@ import com.mitchellbosecke.pebble.node.expression.UnsafeMethods;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import org.junit.Test;
 
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -28,42 +30,35 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 public class GetAttributeTest extends AbstractTest {
 
-    public Method reflectPrivateMethod(Class className, String methodName) throws NoSuchMethodException {
-        Method method = className.getDeclaredMethod(methodName);
-        method.setAccessible(true);
-        return method;
-    }
-
-    public Field reflectPrivateField(Class className, String fieldName)
-            throws IllegalAccessException, NoSuchFieldException {
-        Field field = className.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field;
-    }
-
     @Test
     public void testWhiteList() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
-
+        // Variables
         Class unsafeMethods = UnsafeMethods.class;
         String pathField = "UNSAFE_METHODS_PROPERTIES";
         String loadPropertiesMethod = "loadProperties";
 
+        // Unlock and test private class
         Field path_field = unsafeMethods.getDeclaredField(pathField);
         path_field.setAccessible(true);
         String filePath = (String) path_field.get(pathField);
         System.out.println("PropLoc: " + filePath);
+        assertFalse(filePath.isEmpty());
 
-        Method path_method = unsafeMethods.getDeclaredMethod(loadPropertiesMethod, String.class);
+        // Unlock and test private class
+        Method path_method = UnsafeMethods.class.getDeclaredMethod(loadPropertiesMethod, String.class);
         path_method.setAccessible(true);
         Properties properties = (Properties) path_method.invoke(loadPropertiesMethod, filePath);
         System.out.println("PropSize: " + properties.size());
+        assertTrue(properties.size() > 0);
 
+        // Construct Builder
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(mock(Loader.class));
         builder.extension(mock(Extension.class));
@@ -71,7 +66,6 @@ public class GetAttributeTest extends AbstractTest {
         builder.templateCache(mock(Cache.class));
         builder.whitelist(properties);
         builder.build();
-
     }
 
     @Test
