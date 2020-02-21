@@ -36,7 +36,7 @@ import static org.mockito.Mockito.mock;
 public class GetAttributeTest extends AbstractTest {
 
     @Test
-    public void testWhiteList() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+    public void testPropertiesToConstructor() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
 
         // Variables
         Class unsafeMethods = UnsafeMethods.class;
@@ -47,14 +47,12 @@ public class GetAttributeTest extends AbstractTest {
         Field path_field = unsafeMethods.getDeclaredField(pathField);
         path_field.setAccessible(true);
         String filePath = (String) path_field.get(pathField);
-        System.out.println("PropLoc: " + filePath);
         assertFalse(filePath.isEmpty());
 
         // Unlock and test private class
         Method path_method = UnsafeMethods.class.getDeclaredMethod(loadPropertiesMethod, String.class);
         path_method.setAccessible(true);
         Properties properties = (Properties) path_method.invoke(loadPropertiesMethod, filePath);
-        System.out.println("PropSize: " + properties.size());
         assertTrue(properties.size() > 0);
 
         // Construct Builder with existing whitelist functionality
@@ -65,7 +63,7 @@ public class GetAttributeTest extends AbstractTest {
         builder.templateCache(mock(Cache.class));
         builder.whitelist(properties);
         PebbleEngine pebbleEngine = builder.build();
-        System.out.println(pebbleEngine.getWhitelist().size());
+        assertTrue(pebbleEngine.getWhitelist().size() > 0);
     }
 
     @Test
