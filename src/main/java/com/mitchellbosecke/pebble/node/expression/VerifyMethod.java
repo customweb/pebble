@@ -23,9 +23,8 @@ class VerifyMethod {
     VerifyMethod() { }
 
     //----------------------------------------------------------------------------------------------------------------//
-
-    // 1. Get the whitelist.properties into an "unmodifiable set" / "unmodifiable collection"
-
+    // TODO: Check for the unsafe exceptions, refactor, and reverse the logic for safe (whitelist) methods.
+    // TODO: Remove the blacklist functionality and review for whitelist testing purposes.
     //---------------------------------------------------------------------------------------------------------------//
 
     // @Deprecated // Still used for testing
