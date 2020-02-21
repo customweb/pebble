@@ -37,6 +37,7 @@ public class GetAttributeTest extends AbstractTest {
 
     @Test
     public void testWhiteList() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+
         // Variables
         Class unsafeMethods = UnsafeMethods.class;
         String pathField = "UNSAFE_METHODS_PROPERTIES";
@@ -56,14 +57,15 @@ public class GetAttributeTest extends AbstractTest {
         System.out.println("PropSize: " + properties.size());
         assertTrue(properties.size() > 0);
 
-        // Construct Builder with Whitelist
+        // Construct Builder with existing whitelist functionality
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(mock(Loader.class));
         builder.extension(mock(Extension.class));
         builder.strictVariables(true);
         builder.templateCache(mock(Cache.class));
         builder.whitelist(properties);
-        builder.build();
+        PebbleEngine pebbleEngine = builder.build();
+        System.out.println(pebbleEngine.getWhitelist().size());
     }
 
     @Test
