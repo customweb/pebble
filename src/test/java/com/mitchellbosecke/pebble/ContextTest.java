@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class ContextTest extends AbstractTest {
+public class ContextTest {
 
     @SuppressWarnings("serial")
     @Test

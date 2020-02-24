@@ -30,7 +30,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-public class EscaperExtensionTest extends AbstractTest {
+public class EscaperExtensionTest {
 
     @Test
     public void testEscapeHtml() throws PebbleException, IOException {

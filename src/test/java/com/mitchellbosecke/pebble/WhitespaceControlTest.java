@@ -21,7 +21,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class WhitespaceControlTest extends AbstractTest {
+public class WhitespaceControlTest {
 
     @Test
     public void testStandardizationOfNewlineCharacters() throws PebbleException, IOException {

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class CacheTest extends AbstractTest {
+public class CacheTest {
 
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 	

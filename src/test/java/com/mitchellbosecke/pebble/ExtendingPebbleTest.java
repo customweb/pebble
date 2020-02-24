@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class ExtendingPebbleTest extends AbstractTest {
+public class ExtendingPebbleTest {
 
     private final class CustomExtension extends AbstractExtension {
 

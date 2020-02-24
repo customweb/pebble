@@ -18,7 +18,7 @@ import java.util.Map;
  * @author Thomas Hunziker
  *
  */
-public class StrictModeTest extends AbstractTest {
+public class StrictModeTest {
 
 
 

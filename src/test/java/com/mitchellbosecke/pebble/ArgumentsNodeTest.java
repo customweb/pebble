@@ -13,7 +13,7 @@ import java.io.Writer;
 /**
  * Tests {@link ArgumentsNode}.
  */
-public class ArgumentsNodeTest extends AbstractTest{
+public class ArgumentsNodeTest {
 
     /**
      * Tests that the error description is clear when a invalid number of arguments are provided.

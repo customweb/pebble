@@ -21,7 +21,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class CompilerTest extends AbstractTest {
+public class CompilerTest {
 
     @Test
     public void testCompile() throws PebbleException, IOException {

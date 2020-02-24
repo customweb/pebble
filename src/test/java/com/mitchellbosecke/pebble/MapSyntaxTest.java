@@ -24,7 +24,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MapSyntaxTest extends AbstractTest {
+public class MapSyntaxTest {
 
     @Test
     public void testMapSyntax() throws PebbleException, IOException {

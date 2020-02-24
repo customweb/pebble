@@ -22,7 +22,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class ArraySyntaxTest extends AbstractTest {
+public class ArraySyntaxTest {
 
     @Test
     public void testArraySyntax() throws PebbleException, IOException {

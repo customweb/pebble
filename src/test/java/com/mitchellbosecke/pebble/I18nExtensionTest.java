@@ -20,7 +20,7 @@ import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 
-public class I18nExtensionTest extends AbstractTest {
+public class I18nExtensionTest {
 
     @Test
     public void testSimpleLookup() throws PebbleException, IOException {

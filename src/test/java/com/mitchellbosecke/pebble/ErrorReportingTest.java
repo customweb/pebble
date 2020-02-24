@@ -20,7 +20,7 @@ import java.io.StringWriter;
 
 import static org.junit.Assert.assertEquals;
 
-public class ErrorReportingTest extends AbstractTest {
+public class ErrorReportingTest {
 
     @Test(expected = ParserException.class)
     public void testLineNumberErrorReportingWithUnixNewlines() throws PebbleException, IOException {

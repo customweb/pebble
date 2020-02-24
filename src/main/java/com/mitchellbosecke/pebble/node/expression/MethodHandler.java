@@ -3,6 +3,8 @@ package com.mitchellbosecke.pebble.node.expression;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -19,12 +21,12 @@ class MethodHandler {
         createUnsafeMethodsSet();
     }
 
-    // @Deprecated // Still used for testing
+    @Deprecated
     boolean isUnsafeMethod(Method method) {
         return UNSAFE_METHODS.contains(method);
     }
 
-    // @Deprecated // Still used for testing
+    @Deprecated
     private static Properties loadProperties(String resource) throws IOException {
         Properties props = new Properties();
         InputStream is = null;

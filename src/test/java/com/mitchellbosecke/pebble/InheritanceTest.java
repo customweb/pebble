@@ -21,7 +21,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class InheritanceTest extends AbstractTest {
+public class InheritanceTest {
 
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 

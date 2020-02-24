@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class CoreFunctionsTest extends AbstractTest {
+public class CoreFunctionsTest {
 
     public static final String LINE_SEPARATOR = System.lineSeparator();
 

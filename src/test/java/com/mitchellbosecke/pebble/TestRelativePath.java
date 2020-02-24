@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Thomas Hunziker
  */
-public class TestRelativePath extends AbstractTest {
+public class TestRelativePath {
 
     /**
      * Tests if relative includes work.

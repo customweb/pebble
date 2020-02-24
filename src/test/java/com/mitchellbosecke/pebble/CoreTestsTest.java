@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class CoreTestsTest extends AbstractTest {
+public class CoreTestsTest {
 
     @Test
     public void testEven() throws PebbleException, IOException {

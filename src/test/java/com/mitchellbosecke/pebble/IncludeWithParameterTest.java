@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  * @author Thomas Hunziker
  *
  */
-public class IncludeWithParameterTest extends AbstractTest {
+public class IncludeWithParameterTest {
 
     /**
      * Test if parameters are processed correctly.

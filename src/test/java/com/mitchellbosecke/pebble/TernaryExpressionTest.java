@@ -22,7 +22,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class TernaryExpressionTest extends AbstractTest {
+public class TernaryExpressionTest {
 
     @Test(expected = ParserException.class)
     public void testTernaryFail1() throws PebbleException, IOException {

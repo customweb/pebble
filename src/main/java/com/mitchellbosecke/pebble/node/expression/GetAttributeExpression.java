@@ -19,10 +19,13 @@ import com.mitchellbosecke.pebble.error.ClassAccessException;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.error.RootAttributeNotFoundException;
 import com.mitchellbosecke.pebble.extension.NodeVisitor;
+import com.mitchellbosecke.pebble.loader.FileLoader;
 import com.mitchellbosecke.pebble.node.ArgumentsNode;
 import com.mitchellbosecke.pebble.node.PositionalArgumentNode;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.List;
@@ -37,6 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Mitchell
  */
 public class GetAttributeExpression implements Expression<Object> {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileLoader.class);
 
     private final Expression<?> node;
 
@@ -344,7 +349,7 @@ public class GetAttributeExpression implements Expression<Object> {
             if (unsafeMethod(method)){
                 throw new ClassAccessException(lineNumber, filename);
             } else {
-                System.out.println("Whitelist added for: "+ method.getName());
+                logger.info("Whitelist added for: "+ method.getName());
             }
         }
 

@@ -23,7 +23,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class LoaderTest extends AbstractTest {
+public class LoaderTest {
 
     @Test
     public void testClassLoaderLoader() throws PebbleException, IOException {

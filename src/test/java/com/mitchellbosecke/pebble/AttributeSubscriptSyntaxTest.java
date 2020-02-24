@@ -21,7 +21,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class AttributeSubscriptSyntaxTest extends AbstractTest {
+public class AttributeSubscriptSyntaxTest {
 
     @SuppressWarnings("serial")
     @Test

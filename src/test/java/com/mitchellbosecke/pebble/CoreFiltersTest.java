@@ -26,7 +26,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class CoreFiltersTest extends AbstractTest {
+public class CoreFiltersTest {
 
     @Test
     public void testAbs() throws PebbleException, IOException {

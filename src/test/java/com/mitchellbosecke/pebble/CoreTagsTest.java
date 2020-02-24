@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 
-public class CoreTagsTest extends AbstractTest {
+public class CoreTagsTest {
 
     public static final String LINE_SEPARATOR = System.lineSeparator();
 

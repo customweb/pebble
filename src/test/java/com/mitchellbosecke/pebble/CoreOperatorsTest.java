@@ -28,7 +28,7 @@ import com.mitchellbosecke.pebble.loader.StringLoader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import com.mitchellbosecke.pebble.utils.Pair;
 
-public class CoreOperatorsTest extends AbstractTest {
+public class CoreOperatorsTest {
 
     @Test
     public void testUnaryOperators() throws PebbleException, IOException {
@@ -282,7 +282,7 @@ public class CoreOperatorsTest extends AbstractTest {
         String source = "{% if 'test' equals obj2 %}yes{% endif %}{% if 'blue' equals 'red' %}no{% else %}yes{% endif %}";
         PebbleTemplate template = pebble.getTemplate(source);
         Map<String, Object> context = new HashMap<>();
-        context.put("obj2", new String("test"));
+        context.put("obj2", "test");
 
         Writer writer = new StringWriter();
         template.evaluate(writer, context);
@@ -338,7 +338,7 @@ public class CoreOperatorsTest extends AbstractTest {
      * There was an bug where two Number objects (Integer, Double etc.) were
      * compared for equality using ==. This was fixed to use equals().
      *
-     * @see https://github.com/mbosecke/pebble/issues/46
+     * @see "https://github.com/mbosecke/pebble/issues/46"
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test()
@@ -353,8 +353,8 @@ public class CoreOperatorsTest extends AbstractTest {
         List<Pair<Number, String>> tests = new ArrayList<>();
         tests.add(new Pair(1, "num1"));
         tests.add(new Pair(999999, "num999999"));
-        tests.add(new Pair(1l, "num1"));
-        tests.add(new Pair(999999l, "num999999"));
+        tests.add(new Pair(1L, "num1"));
+        tests.add(new Pair(999999L, "num999999"));
         tests.add(new Pair(1f, "num1"));
         tests.add(new Pair(999999f, "num999999"));
         tests.add(new Pair(1d, "num1"));
@@ -696,35 +696,35 @@ public class CoreOperatorsTest extends AbstractTest {
         // char
         writer = new StringWriter();
         context.put("values", new char[] { 'a', 'b' });
-        context.put("value", new Character('a'));
+        context.put("value", 'a');
         template.evaluate(writer, context);
         assertEquals("yes", writer.toString());
 
         // double
         writer = new StringWriter();
         context.put("values", new double[] { 1.0d, 2.0d });
-        context.put("value", new Double(1.0d));
+        context.put("value", 1.0d);
         template.evaluate(writer, context);
         assertEquals("yes", writer.toString());
 
         // float
         writer = new StringWriter();
         context.put("values", new float[] { 1.0f, 2.0f });
-        context.put("value", new Float(1.0f));
+        context.put("value", 1.0f);
         template.evaluate(writer, context);
         assertEquals("yes", writer.toString());
 
         // int
         writer = new StringWriter();
         context.put("values", new int[] { 1, 2 });
-        context.put("value", new Integer(1));
+        context.put("value", 1);
         template.evaluate(writer, context);
         assertEquals("yes", writer.toString());
 
         // long
         writer = new StringWriter();
         context.put("values", new long[] { 1, 2 });
-        context.put("value", new Long(1));
+        context.put("value", 1L);
         template.evaluate(writer, context);
         assertEquals("yes", writer.toString());
 

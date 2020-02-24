@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class ConcurrencyTest extends AbstractTest {
+public class ConcurrencyTest {
 
     static Random r = new SecureRandom();
 

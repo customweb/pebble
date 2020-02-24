@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests if equals is working with enums.
  */
-public class EnumEqualsTest extends AbstractTest{
+public class EnumEqualsTest {
 
     @Test
     public void testEnumComparision() throws PebbleException, IOException {

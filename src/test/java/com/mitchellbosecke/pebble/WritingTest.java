@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertEquals;
 
-public class WritingTest extends AbstractTest {
+public class WritingTest {
 
     /**
      * There was an issue where the pebble engine was closing the provided

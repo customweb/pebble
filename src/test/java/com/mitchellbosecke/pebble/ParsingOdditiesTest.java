@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class ParsingOdditiesTest extends AbstractTest {
+public class ParsingOdditiesTest {
 
     @Test
     public void testEscapeCharactersText() throws PebbleException, IOException {
