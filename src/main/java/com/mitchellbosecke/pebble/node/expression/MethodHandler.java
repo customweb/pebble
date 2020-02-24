@@ -21,16 +21,16 @@ class MethodHandler {
 
     //----------------------------------------------------------------------------------------------------------------//
     // TODO: Fetch the properties files from the int Class (PebbleEngine).
-    // TODO: Check for the unsafe exceptions, refactor, and reverse the logic for safe (whitelist) methods.
+    // TODO: Reverse logic for the unsafe exceptions, and refactor, to safe (whitelist) methods.
     // TODO: Remove the blacklist functionality and review for whitelist testing purposes.
-    //---------------------------------------------------------------------------------------------------------------//
+    //----------------------------------------------------------------------------------------------------------------//
 
     // @Deprecated // Still used for testing
     boolean isUnsafeMethod(Method method) {
         return UNSAFE_METHODS.contains(method);
     }
 
-    @Deprecated // Still used for testing
+    // @Deprecated // Still used for testing
     private static Properties loadProperties(String resource) throws IOException {
         Properties props = new Properties();
         InputStream is = null;
