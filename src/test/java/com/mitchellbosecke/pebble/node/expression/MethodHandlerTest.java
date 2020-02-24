@@ -6,6 +6,7 @@ import com.mitchellbosecke.pebble.extension.Extension;
 import com.mitchellbosecke.pebble.loader.Loader;
 import org.junit.Test;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -18,7 +19,7 @@ public class MethodHandlerTest {
     @Test
     public void testToCreateNewWhiteList() {
 
-        // Pass in Properties into Constructor Builder
+        // Pass Properties into Constructor Builder
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(mock(Loader.class));
         builder.extension(mock(Extension.class));
@@ -27,14 +28,19 @@ public class MethodHandlerTest {
         PebbleEngine pebbleEngine = builder.build();
 
         // Create Dummy Whitelist with Identifier
-        String path = "Whitelist1.properties";
+        String path = "whitelist1.properties"; // Filename will be set from properties variable.
         Properties whitelist = new Properties();
         whitelist.put("fileType", path);
 
-        // Add Whitelist post-construction
+        // Add a dynamic whitelist post-construction
         pebbleEngine.addWhitelist(whitelist);
+
         // Check the whitelist exists in directory
         assertTrue(Files.exists(Paths.get(path)));
+
+        // Cleanup
+        File f = new File(path);
+        assertTrue(f.delete());
     }
 
     @Test
