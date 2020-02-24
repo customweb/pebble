@@ -6,47 +6,40 @@ import com.mitchellbosecke.pebble.extension.Extension;
 import com.mitchellbosecke.pebble.loader.Loader;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 
-import static junit.framework.TestCase.assertFalse;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class MethodHandlerTest {
 
     @Test
-    public void testPassingPropertiesIntoPebbleLibraryConstructor()
-            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+    public void testToCreateNewWhiteList() {
 
-        // Variables
-        Class unsafeMethods = MethodHandler.class;
-        String pathField = "UNSAFE_METHODS_PROPERTIES";
-        String loadPropertiesMethod = "loadProperties";
-
-        // Unlock and test private class
-        Field path_field = unsafeMethods.getDeclaredField(pathField);
-        path_field.setAccessible(true);
-        String filePath = (String) path_field.get(pathField);
-        assertFalse(filePath.isEmpty());
-
-        // Unlock and test private class
-        Method path_method = MethodHandler.class.getDeclaredMethod(loadPropertiesMethod, String.class);
-        path_method.setAccessible(true);
-        Properties properties = (Properties) path_method.invoke(loadPropertiesMethod, filePath);
-        assertTrue(properties.size() > 0);
-
-        // Construct Builder with existing whitelist functionality
+        // Pass in Properties into Constructor Builder
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(mock(Loader.class));
         builder.extension(mock(Extension.class));
         builder.strictVariables(true);
         builder.templateCache(mock(Cache.class));
-        builder.whitelist(properties);
         PebbleEngine pebbleEngine = builder.build();
-        assertTrue(pebbleEngine.getWhitelist().size() > 0);
+
+        // Create Dummy Whitelist with Identifier
+        String path = "Whitelist1.properties";
+        Properties whitelist = new Properties();
+        whitelist.put("fileType", path);
+
+        // Add Whitelist post-construction
+        pebbleEngine.addWhitelist(whitelist);
+        // Check the whitelist exists in directory
+        assertTrue(Files.exists(Paths.get(path)));
+    }
+
+    @Test
+    public void testWhitelistLogic(){
+
     }
 
 }

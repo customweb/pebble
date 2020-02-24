@@ -8,7 +8,7 @@
  ******************************************************************************/
 package com.mitchellbosecke.pebble;
 
-import java.io.Reader;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -99,6 +99,23 @@ public class PebbleEngine {
         this.extensionRegistry = new ExtensionRegistry(extensions);
         this.objectPrinter = new ObjectPrinter(this.extensionRegistry);
         this.whitelist = whitelist;
+    }
+
+    /**
+     * Allows creation of whiteList files dynamically after construction
+     *
+     * @param props the whitelist properties file
+     */
+
+    public void addWhitelist(Properties props) {
+        try {
+            File f = new File(props.getProperty("fileType","whitelist.properties"));
+            OutputStream out = new FileOutputStream( f );
+            props.store(out, "Whitelist, created:");
+        }
+        catch (Exception e ) {
+            e.printStackTrace();
+        }
     }
 
     /**

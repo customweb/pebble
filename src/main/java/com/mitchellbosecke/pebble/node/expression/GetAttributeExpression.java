@@ -68,7 +68,6 @@ public class GetAttributeExpression implements Expression<Object> {
         this.args = args;
         this.filename = filename;
         this.lineNumber = lineNumber;
-
         /*
          * I dont imagine that users will often give different types to the same
          * template so we will give this cache a pretty small initial capacity.
