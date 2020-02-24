@@ -19,12 +19,6 @@ class MethodHandler {
         createUnsafeMethodsSet();
     }
 
-    //----------------------------------------------------------------------------------------------------------------//
-    // TODO: Fetch the properties files from the int Class (PebbleEngine).
-    // TODO: Reverse logic for the unsafe exceptions, and refactor, to safe (whitelist) methods.
-    // TODO: Remove the blacklist functionality and review for whitelist testing purposes.
-    //----------------------------------------------------------------------------------------------------------------//
-
     // @Deprecated // Still used for testing
     boolean isUnsafeMethod(Method method) {
         return UNSAFE_METHODS.contains(method);
