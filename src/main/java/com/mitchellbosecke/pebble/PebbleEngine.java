@@ -67,16 +67,12 @@ public class PebbleEngine {
 
     private final ObjectPrinter objectPrinter;
 
-    private final Properties whitelist;
-
     /**
      * Constructor for the Pebble Engine given an instantiated Loader. This method
      * does only load those userProvidedExtensions listed here.
-     *
-     * @param loader     The template loader for this engine.
+     *  @param loader     The template loader for this engine.
      * @param syntax     The syntax to use for parsing the templates.
      * @param extensions The userProvidedExtensions which should be loaded.
-     * @param whitelist  The whitelist provided for method checking.
      */
     public PebbleEngine(
             Loader<?> loader,
@@ -86,8 +82,7 @@ public class PebbleEngine {
             Cache<BaseTagCacheKey, Object> tagCache,
             Cache<Object, PebbleTemplate> templateCache,
             ExecutorService executorService,
-            Collection<? extends Extension> extensions,
-            Properties whitelist) {
+            Collection<? extends Extension> extensions) {
 
         this.loader = loader;
         this.syntax = syntax;
@@ -98,7 +93,6 @@ public class PebbleEngine {
         this.templateCache = templateCache;
         this.extensionRegistry = new ExtensionRegistry(extensions);
         this.objectPrinter = new ObjectPrinter(this.extensionRegistry);
-        this.whitelist = whitelist;
     }
 
     /**
@@ -228,15 +222,6 @@ public class PebbleEngine {
      */
     public boolean isStrictVariables() {
         return strictVariables;
-    }
-
-    /**
-     * Gets the Whitelist
-     *
-     * @return the whitelist .properties file
-     */
-    public Properties getWhitelist() {
-        return whitelist;
     }
 
     /**
@@ -527,7 +512,7 @@ public class PebbleEngine {
             }
 
             return new PebbleEngine(loader, syntax, strictVariables, defaultLocale, tagCache, templateCache,
-                    executorService, extensions, whitelist);
+                    executorService, extensions);
         }
     }
 }
