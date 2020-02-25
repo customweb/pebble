@@ -3,13 +3,13 @@ package com.mitchellbosecke.pebble.node.expression;
 import com.google.common.cache.Cache;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.extension.Extension;
-import com.mitchellbosecke.pebble.loader.StringLoader;
+import com.mitchellbosecke.pebble.loader.Loader;
 import org.junit.Test;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Properties;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -17,36 +17,26 @@ import static org.mockito.Mockito.mock;
 public class MethodHandlerTest {
 
     @Test
-    public void testToAddNewDynamicWhiteListPropertiesFile() {
+    public void testToCreateNewWhiteList() throws NoSuchMethodException {
 
-        // The filename will be set dynamically from properties variable.
-        String path = "whitelist1.properties";
+        // Create Dummy WhiteList with Identifier
+        Set<Method> whiteList = new HashSet<>();
+        Method method = PebbleEngine.class.getMethod("getTemplate", String.class);
+        whiteList.add(method);
+        whiteList = Collections.unmodifiableSet(whiteList);
 
-        //Create Pebble Engine Instance
-        PebbleEngine pebbleEngine = createEngine();
-
-        // Create Dummy Whitelist with Identifier
-        Properties whitelist = new Properties();
-        whitelist.put("fileType", path);
-
-        // Add a dynamic whitelist post-construction
-        pebbleEngine.addWhitelist(whitelist);
-
-        // Check the whitelist exists in directory
-        assertTrue(Files.exists(Paths.get(path)));
-
-        // Cleanup
-        File f = new File(path);
-        assertTrue(f.delete());
-    }
-
-    public PebbleEngine createEngine(){
+        // Pass Properties into Constructor Builder
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
-        builder.loader(new StringLoader());
+        builder.loader(mock(Loader.class));
         builder.extension(mock(Extension.class));
-        builder.strictVariables(false);
+        builder.strictVariables(true);
         builder.templateCache(mock(Cache.class));
-        return builder.build();
+        builder.whiteList(whiteList);
+        PebbleEngine pebbleEngine = builder.build();
+
+        // Assert WhiteList
+        assertTrue(pebbleEngine.getWhiteList().size() == 1);
+
     }
 
 }
