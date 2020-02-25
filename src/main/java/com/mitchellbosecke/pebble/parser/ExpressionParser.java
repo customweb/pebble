@@ -96,7 +96,7 @@ public class ExpressionParser {
      * precedence required to operate a "precedence climbing" parsing algorithm.
      * It is a recursive method.
      *
-     * @see http://en.wikipedia.org/wiki/Operator-precedence_parser
+     * @see "http://en.wikipedia.org/wiki/Operator-precedence_parser"
      *
      * @return The NodeExpression representing the parsed expression.
      * @throws ParserException
