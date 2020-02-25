@@ -9,6 +9,7 @@
 package com.mitchellbosecke.pebble;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -67,12 +68,15 @@ public class PebbleEngine {
 
     private final ObjectPrinter objectPrinter;
 
+    private final Set<Method> whiteList;
+
     /**
      * Constructor for the Pebble Engine given an instantiated Loader. This method
      * does only load those userProvidedExtensions listed here.
-     *  @param loader     The template loader for this engine.
+     * @param loader     The template loader for this engine.
      * @param syntax     The syntax to use for parsing the templates.
      * @param extensions The userProvidedExtensions which should be loaded.
+     * @param whiteList  The whiteList Set passed into the Library
      */
     public PebbleEngine(
             Loader<?> loader,
@@ -82,7 +86,8 @@ public class PebbleEngine {
             Cache<BaseTagCacheKey, Object> tagCache,
             Cache<Object, PebbleTemplate> templateCache,
             ExecutorService executorService,
-            Collection<? extends Extension> extensions) {
+            Collection<? extends Extension> extensions,
+            Set<Method> whiteList) {
 
         this.loader = loader;
         this.syntax = syntax;
@@ -93,23 +98,7 @@ public class PebbleEngine {
         this.templateCache = templateCache;
         this.extensionRegistry = new ExtensionRegistry(extensions);
         this.objectPrinter = new ObjectPrinter(this.extensionRegistry);
-    }
-
-    /**
-     * Allows creation of whiteList files dynamically after construction
-     *
-     * @param props the whitelist properties file
-     */
-
-    public void addWhitelist(Properties props) {
-        try {
-            File f = new File(props.getProperty("fileType","whitelist.properties"));
-            OutputStream out = new FileOutputStream( f );
-            props.store(out, "Whitelist, created:");
-        }
-        catch (Exception e ) {
-            e.printStackTrace();
-        }
+        this.whiteList = whiteList;
     }
 
     /**
@@ -278,6 +267,10 @@ public class PebbleEngine {
         return this.objectPrinter;
     }
 
+    public Set<Method> getWhiteList() {
+        return whiteList;
+    }
+
     /**
      * A builder to configure and construct an instance of a PebbleEngine.
      */
@@ -303,7 +296,7 @@ public class PebbleEngine {
 
         private EscaperExtension escaperExtension = new EscaperExtension();
 
-        private Properties whitelist;
+        private Set<Method> whiteList;
 
         /**
          * Creates the builder.
@@ -463,10 +456,11 @@ public class PebbleEngine {
         /**
          * Attaches a properties file to the builder params
          *
-         * @param whitelist properties file
+         * @param whiteList properties file
          */
-        public void whitelist(Properties whitelist) {
-            this.whitelist = whitelist;
+        public Builder whiteList(Set<Method> whiteList) {
+            this.whiteList = Collections.unmodifiableSet(whiteList);
+            return this;
         }
 
         /**
@@ -512,7 +506,7 @@ public class PebbleEngine {
             }
 
             return new PebbleEngine(loader, syntax, strictVariables, defaultLocale, tagCache, templateCache,
-                    executorService, extensions);
+                    executorService, extensions, whiteList);
         }
     }
 }
