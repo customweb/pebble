@@ -19,10 +19,8 @@ class MethodHandler {
 
     private static final String UNSAFE_METHODS_PROPERTIES = "/unsafeMethods.properties";
     private static Set<Method> UNSAFE_METHODS = new HashSet<>();
-    private WhiteListObject whiteList;
 
-    MethodHandler(WhiteListObject whiteList) {
-        this.whiteList = whiteList;
+    MethodHandler() {
         createUnsafeMethodsSet();
     }
 

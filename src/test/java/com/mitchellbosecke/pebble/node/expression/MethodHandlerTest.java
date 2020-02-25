@@ -25,14 +25,19 @@ public class MethodHandlerTest {
         Method method = PebbleEngine.class.getMethod("getTemplate", String.class);
         whiteList.add(method);
         WhiteListObject whiteListObject = new WhiteListObject(whiteList);
+      
+        whiteList.add(PebbleEngine.class.getMethod("getExecutorService"));
+
 
         // Pass Properties into Constructor Builder
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(new StringLoader());
         builder.strictVariables(false);
-        builder.whiteList(whiteListObject);
+        builder.whiteList(null);
         PebbleEngine pebbleEngine = builder.build();
-
+        
+        
+        
         // Setup
         String source = "{% for user in users %}{% if loop.first %}[{{ loop.length }}]{% endif %}{% if loop.last %}[{{ loop.length }}]{% endif %}{{ loop.index }}{{ loop.revindex }}{{ user.username }}{% endfor %}";
         PebbleTemplate template = pebbleEngine.getTemplate(source);
@@ -44,7 +49,9 @@ public class MethodHandlerTest {
         context.put("users", users);
         Writer writer = new StringWriter();
         template.evaluate(writer, context);
-
+        
+        System.out.println( pebbleEngine.getWhiteListObject());
+        
         // Test
         assertEquals("[3]02Alex11Bob[3]20John", writer.toString());
         assertEquals(1, pebbleEngine.getWhiteListObject().getWhiteList().size());

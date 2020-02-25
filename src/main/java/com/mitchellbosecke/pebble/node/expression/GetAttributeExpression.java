@@ -14,6 +14,19 @@
  ******************************************************************************/
 package com.mitchellbosecke.pebble.node.expression;
 
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mitchellbosecke.pebble.error.AttributeNotFoundException;
 import com.mitchellbosecke.pebble.error.ClassAccessException;
 import com.mitchellbosecke.pebble.error.PebbleException;
@@ -25,13 +38,6 @@ import com.mitchellbosecke.pebble.node.PositionalArgumentNode;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
 import com.mitchellbosecke.pebble.utils.WhiteListObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.*;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Used to get an attribute from an object. It will look up attributes in the
@@ -55,6 +61,8 @@ public class GetAttributeExpression implements Expression<Object> {
     private final int lineNumber;
 
     private final MethodHandler methodHandler;
+    private final WhiteListObject whiteList;
+
 
     /**
      * Potentially cached on first evaluation.
@@ -71,7 +79,11 @@ public class GetAttributeExpression implements Expression<Object> {
         this.args = args;
         this.filename = filename;
         this.lineNumber = lineNumber;
-        this.methodHandler  = new MethodHandler(whiteList);
+        this.methodHandler  = new MethodHandler();
+        if (whiteList == null) {
+        	throw new IllegalArgumentException("The white list cannot be null.");
+        }
+        this.whiteList = whiteList;
         /*
          * I dont imagine that users will often give different types to the same
          * template so we will give this cache a pretty small initial capacity.
@@ -259,8 +271,9 @@ public class GetAttributeExpression implements Expression<Object> {
      * @param attributeName
      * @param parameterTypes
      * @return
+     * @throws PebbleException 
      */
-    private Member reflect(Object object, String attributeName, Class<?>[] parameterTypes) throws ClassAccessException {
+    private Member reflect(Object object, String attributeName, Class<?>[] parameterTypes) throws PebbleException {
 
         Class<?> clazz = object.getClass();
 
@@ -310,8 +323,9 @@ public class GetAttributeExpression implements Expression<Object> {
      * @param name
      * @param requiredTypes
      * @return
+     * @throws PebbleException 
      */
-    private Method findMethod(Class<?> clazz, String name, Class<?>[] requiredTypes) throws ClassAccessException {
+    private Method findMethod(Class<?> clazz, String name, Class<?>[] requiredTypes) throws PebbleException {
         if (name.equalsIgnoreCase("getClass")) {
             throw new ClassAccessException(lineNumber, filename);
         }
@@ -347,8 +361,8 @@ public class GetAttributeExpression implements Expression<Object> {
         if (method != null) {
             if (unsafeMethod(method)){
                 throw new ClassAccessException(lineNumber, filename);
-            } else {
-                logger.info("Whitelist added for: "+ method.getName());
+            } else if (!this.whiteList.isWhitelisted(method)) {
+            	this.whiteList.getBlockingBehavior().onMethodBlock(method, lineNumber, filename);
             }
         }
 
