@@ -16,6 +16,7 @@ import com.mitchellbosecke.pebble.node.expression.Expression;
 import com.mitchellbosecke.pebble.operator.BinaryOperator;
 import com.mitchellbosecke.pebble.operator.UnaryOperator;
 import com.mitchellbosecke.pebble.tokenParser.TokenParser;
+import com.mitchellbosecke.pebble.utils.WhiteListObject;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -61,29 +62,31 @@ public class ParserImpl implements Parser {
 
 	private final ObjectPrinter printer;
 
+	private final WhiteListObject whiteList;
+
 	/**
 	 * Constructor
-	 *
+	 *  @param unaryOperators
+	 *            A map of unary operators
 	 * @param binaryOperators
 	 *            A map of binary operators
-	 * @param unaryOperators
-	 *            A map of unary operators
 	 * @param tokenParsers
-	 *            A map of token parsers
+	 * @param whiteList
 	 */
 	public ParserImpl(Map<String, UnaryOperator> unaryOperators, Map<String, BinaryOperator> binaryOperators,
-			Map<String, TokenParser> tokenParsers, ObjectPrinter printer) {
+					  Map<String, TokenParser> tokenParsers, ObjectPrinter printer, WhiteListObject whiteList) {
 		this.binaryOperators = binaryOperators;
 		this.unaryOperators = unaryOperators;
 		this.tokenParsers = tokenParsers;
 		this.printer = printer;
+		this.whiteList = whiteList;
 	}
 
 	@Override
 	public RootNode parse(TokenStream stream) throws ParserException {
 
 		// expression parser
-		this.expressionParser = new ExpressionParser(this, binaryOperators, unaryOperators);
+		this.expressionParser = new ExpressionParser(this, binaryOperators, unaryOperators, whiteList);
 
 		this.stream = stream;
 

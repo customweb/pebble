@@ -24,6 +24,7 @@ import com.mitchellbosecke.pebble.node.ArgumentsNode;
 import com.mitchellbosecke.pebble.node.PositionalArgumentNode;
 import com.mitchellbosecke.pebble.template.EvaluationContext;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+import com.mitchellbosecke.pebble.utils.WhiteListObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,26 +54,24 @@ public class GetAttributeExpression implements Expression<Object> {
 
     private final int lineNumber;
 
-    private final MethodHandler methodHandler = new MethodHandler();
+    private final MethodHandler methodHandler;
 
     /**
      * Potentially cached on first evaluation.
      */
     private final ConcurrentHashMap<MemberCacheKey, Member> memberCache;
 
-    public GetAttributeExpression(Expression<?> node, Expression<?> attributeNameExpression, String filename,
-                                  int lineNumber) {
-        this(node, attributeNameExpression, null, filename, lineNumber);
+    public GetAttributeExpression(Expression<?> node, Expression<?> attributeNameExpression, String filename, int lineNumber,  WhiteListObject whiteList) {
+        this(node, attributeNameExpression, null, filename, lineNumber, whiteList);
     }
 
-    public GetAttributeExpression(Expression<?> node, Expression<?> attributeNameExpression, ArgumentsNode args,
-                                  String filename, int lineNumber) {
-
+    public GetAttributeExpression(Expression<?> node, Expression<?> attributeNameExpression, ArgumentsNode args, String filename, int lineNumber, WhiteListObject whiteList) {
         this.node = node;
         this.attributeNameExpression = attributeNameExpression;
         this.args = args;
         this.filename = filename;
         this.lineNumber = lineNumber;
+        this.methodHandler  = new MethodHandler(whiteList);
         /*
          * I dont imagine that users will often give different types to the same
          * template so we will give this cache a pretty small initial capacity.

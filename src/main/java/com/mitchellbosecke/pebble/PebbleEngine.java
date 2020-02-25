@@ -40,6 +40,7 @@ import com.mitchellbosecke.pebble.parser.Parser;
 import com.mitchellbosecke.pebble.parser.ParserImpl;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
+import com.mitchellbosecke.pebble.utils.WhiteListObject;
 
 /**
  * The main class used for compiling templates. The PebbleEngine is responsible
@@ -68,7 +69,7 @@ public class PebbleEngine {
 
     private final ObjectPrinter objectPrinter;
 
-    private final Set<Method> whiteList;
+    private final WhiteListObject whiteList;
 
     /**
      * Constructor for the Pebble Engine given an instantiated Loader. This method
@@ -87,7 +88,7 @@ public class PebbleEngine {
             Cache<Object, PebbleTemplate> templateCache,
             ExecutorService executorService,
             Collection<? extends Extension> extensions,
-            Set<Method> whiteList) {
+            WhiteListObject whiteList) {
 
         this.loader = loader;
         this.syntax = syntax;
@@ -140,7 +141,7 @@ public class PebbleEngine {
 
                         Parser parser = new ParserImpl(extensionRegistry.getUnaryOperators(),
                                 extensionRegistry.getBinaryOperators(), extensionRegistry.getTokenParsers(),
-                                objectPrinter);
+                                objectPrinter, whiteList);
                         RootNode root = parser.parse(tokenStream);
 
                         PebbleTemplateImpl instance = new PebbleTemplateImpl(self, root, templateName);
@@ -267,7 +268,7 @@ public class PebbleEngine {
         return this.objectPrinter;
     }
 
-    public Set<Method> getWhiteList() {
+    public WhiteListObject getWhiteListObject() {
         return whiteList;
     }
 
@@ -296,7 +297,7 @@ public class PebbleEngine {
 
         private EscaperExtension escaperExtension = new EscaperExtension();
 
-        private Set<Method> whiteList;
+        private WhiteListObject whiteList;
 
         /**
          * Creates the builder.
@@ -458,8 +459,8 @@ public class PebbleEngine {
          *
          * @param whiteList properties file
          */
-        public Builder whiteList(Set<Method> whiteList) {
-            this.whiteList = Collections.unmodifiableSet(whiteList);
+        public Builder whiteList(WhiteListObject whiteList) {
+            this.whiteList = whiteList;
             return this;
         }
 

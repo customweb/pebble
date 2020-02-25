@@ -47,6 +47,7 @@ import com.mitchellbosecke.pebble.node.expression.UnaryExpression;
 import com.mitchellbosecke.pebble.operator.Associativity;
 import com.mitchellbosecke.pebble.operator.BinaryOperator;
 import com.mitchellbosecke.pebble.operator.UnaryOperator;
+import com.mitchellbosecke.pebble.utils.WhiteListObject;
 
 /**
  * Parses expressions.
@@ -63,21 +64,23 @@ public class ExpressionParser {
 
     private Map<String, UnaryOperator> unaryOperators;
 
+    private WhiteListObject whiteList;
+
     /**
      * Constructor
-     *
-     * @param parser
+     *  @param parser
      *            A reference to the main parser
      * @param binaryOperators
      *            All the binary operators
      * @param unaryOperators
-     *            All the unary operators
+     * @param whiteList
      */
     public ExpressionParser(Parser parser, Map<String, BinaryOperator> binaryOperators,
-                            Map<String, UnaryOperator> unaryOperators) {
+                            Map<String, UnaryOperator> unaryOperators, WhiteListObject whiteList) {
         this.parser = parser;
         this.binaryOperators = binaryOperators;
         this.unaryOperators = unaryOperators;
+        this.whiteList = whiteList;
     }
 
     /**
@@ -455,14 +458,13 @@ public class ExpressionParser {
             }
 
             node = new GetAttributeExpression(node, new LiteralStringExpression(token.getValue(), token.getLineNumber()), args,
-                    stream.getFilename(), token.getLineNumber());
+                    stream.getFilename(), token.getLineNumber(), whiteList);
 
         } else if (stream.current().test(Token.Type.PUNCTUATION, "[")) {
             // skip over opening '[' bracket
             stream.next();
 
-            node = new GetAttributeExpression(node, parseExpression(), stream.getFilename(), stream.current()
-                    .getLineNumber());
+            node = new GetAttributeExpression(node, parseExpression(), stream.getFilename(), stream.current().getLineNumber(), whiteList);
 
             // move past the closing ']' bracket
             stream.expect(Token.Type.PUNCTUATION, "]");

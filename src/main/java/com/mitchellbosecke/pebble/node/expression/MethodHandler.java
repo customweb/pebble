@@ -1,6 +1,7 @@
 package com.mitchellbosecke.pebble.node.expression;
 
 import com.mitchellbosecke.pebble.parser.ParserImpl;
+import com.mitchellbosecke.pebble.utils.WhiteListObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,9 +19,10 @@ class MethodHandler {
 
     private static final String UNSAFE_METHODS_PROPERTIES = "/unsafeMethods.properties";
     private static Set<Method> UNSAFE_METHODS = new HashSet<>();
-    //private final Set<Method> whiteList = ;
+    private WhiteListObject whiteList;
 
-    MethodHandler() {
+    MethodHandler(WhiteListObject whiteList) {
+        this.whiteList = whiteList;
         createUnsafeMethodsSet();
     }
 
