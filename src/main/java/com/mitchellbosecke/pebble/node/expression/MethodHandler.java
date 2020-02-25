@@ -1,5 +1,7 @@
 package com.mitchellbosecke.pebble.node.expression;
 
+import com.mitchellbosecke.pebble.parser.ParserImpl;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -16,6 +18,7 @@ class MethodHandler {
 
     private static final String UNSAFE_METHODS_PROPERTIES = "/unsafeMethods.properties";
     private static Set<Method> UNSAFE_METHODS = new HashSet<>();
+    //private final Set<Method> whiteList = ;
 
     MethodHandler() {
         createUnsafeMethodsSet();
