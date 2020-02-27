@@ -8,9 +8,14 @@
  ******************************************************************************/
 package com.mitchellbosecke.pebble;
 
-import java.io.*;
+import java.io.Reader;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -99,7 +104,13 @@ public class PebbleEngine {
         this.templateCache = templateCache;
         this.extensionRegistry = new ExtensionRegistry(extensions);
         this.objectPrinter = new ObjectPrinter(this.extensionRegistry);
-        this.whiteList = whiteList;
+        if (whiteList == null) {
+        	 this.whiteList = new WhiteListObject(new HashSet<Method>(), WhiteListObject.DEFAULT_BEHAVIOR);
+        }
+        else {
+        	 this.whiteList = whiteList;
+        }
+       
     }
 
     /**
