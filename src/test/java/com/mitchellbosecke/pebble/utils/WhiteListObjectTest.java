@@ -1,10 +1,10 @@
-package com.mitchellbosecke.pebble.node.expression;
+package com.mitchellbosecke.pebble.utils;
 
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.error.PebbleException;
 import com.mitchellbosecke.pebble.loader.StringLoader;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
-import com.mitchellbosecke.pebble.utils.WhiteListObject;
+import org.json.JSONArray;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,48 +15,59 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class MethodHandlerTest {
+public class WhiteListObjectTest {
+
+    public JSONArray makeJsonArray() {
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put("java.lang.Object.notify()");
+        jsonArray.put("java.lang.Object.notifyAll()");
+        jsonArray.put("java.lang.Object.getClass()");
+        jsonArray.put("java.lang.reflect.AccessibleObject.setAccessible([Ljava.lang.reflect.AccessibleObject;,boolean)");
+        return jsonArray;
+    }
 
     @Test
-    public void testWhiteListAndWhiteListIntoConstructor() throws PebbleException, IOException, NoSuchMethodException {
+    public void testBuild() throws PebbleException, IOException {
 
         // Create Dummy WhiteList with Method
-        Set<Method> whiteList = new HashSet<>();
-        Method method = PebbleEngine.class.getMethod("getTemplate", String.class);
-        whiteList.add(method);
-        WhiteListObject whiteListObject = new WhiteListObject(whiteList);
+        JSONArray jsonArray = makeJsonArray();
 
         // Pass Properties into Builder
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(new StringLoader());
         builder.strictVariables(false);
-        builder.whiteList(whiteListObject);
+        builder.whiteList(jsonArray);
         PebbleEngine pebbleEngine = builder.build();
 
         // Set Up Test
-        String source = "{% for user in users %}{% if loop.first %}[{{ loop.length }}]{% endif %}{% if loop.last %}[{{ loop.length }}]{% endif %}{{ loop.index }}{{ loop.revindex }}{{ user.username }}{% endfor %}";
+        String source = "{% for user in users %}{% if loop.first %}[{{ loop.length }}]{% endif %}{% if loop.last %}" +
+                "[{{ loop.length }}]{% endif %}{{ loop.index }}{{ loop.revindex }}{{ user.username }}{% endfor %}";
         PebbleTemplate template = pebbleEngine.getTemplate(source);
-        Map<String, Object> context = new HashMap<>();
+
         List<UserObject> users = new ArrayList<>();
         users.add(new UserObject("Alex"));
         users.add(new UserObject("Bob"));
         users.add(new UserObject("John"));
+
+        Map<String, Object> context = new HashMap<>();
         context.put("users", users);
         Writer writer = new StringWriter();
         template.evaluate(writer, context);
 
         // Run Test
         assertEquals("[3]02Alex11Bob[3]20John", writer.toString());
-        assertEquals(1, pebbleEngine.getWhiteListObject().getWhiteList().size());
+        Set<Method> whiteList = pebbleEngine.getWhiteListObject().getWhiteList();
+        assertEquals(jsonArray.length(), whiteList.size());
     }
 
     public static class UserObject {
         private final String username;
-
         public UserObject(String username) {
             this.username = username;
         }
-        public String getUsername() { return username; }
+        public String getUsername() {
+            return username;
+        }
     }
 
 }

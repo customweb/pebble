@@ -71,11 +71,8 @@ public class GetAttributeExpression implements Expression<Object> {
         this.args = args;
         this.filename = filename;
         this.lineNumber = lineNumber;
-        this.methodHandler  = new MethodHandler(whiteList);
-        /*
-         * I dont imagine that users will often give different types to the same
-         * template so we will give this cache a pretty small initial capacity.
-         */
+        this.methodHandler  = new MethodHandler();
+        //Users may often give different types to the same template, we'll give the cache a small initial capacity.
         this.memberCache = new ConcurrentHashMap<>(2, 0.9f, 1);
     }
 

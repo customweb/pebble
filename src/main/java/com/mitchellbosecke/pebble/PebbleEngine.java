@@ -10,12 +10,7 @@ package com.mitchellbosecke.pebble;
 
 import java.io.Reader;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +41,7 @@ import com.mitchellbosecke.pebble.parser.ParserImpl;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import com.mitchellbosecke.pebble.template.PebbleTemplateImpl;
 import com.mitchellbosecke.pebble.utils.WhiteListObject;
+import org.json.JSONArray;
 
 /**
  * The main class used for compiling templates. The PebbleEngine is responsible
@@ -105,7 +101,6 @@ public class PebbleEngine {
         this.extensionRegistry = new ExtensionRegistry(extensions);
         this.objectPrinter = new ObjectPrinter(this.extensionRegistry);
         this.whiteList = whiteList;
-       
     }
 
     /**
@@ -463,10 +458,10 @@ public class PebbleEngine {
         /**
          * Attaches a properties file to the builder params
          *
-         * @param whiteList properties file
+         * @param  jsonArray to be converted
          */
-        public Builder whiteList(WhiteListObject whiteList) {
-            this.whiteList = whiteList;
+        public Builder whiteList(JSONArray jsonArray) {
+            this.whiteList = new WhiteListObject(jsonArray);
             return this;
         }
 
