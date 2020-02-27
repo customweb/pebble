@@ -16,7 +16,8 @@ public class WhiteListObject {
 
     // Constructor
     public WhiteListObject(Set<Method> whiteList) {
-        Set<Method> nonNullSetList = new HashSet<>(Objects.requireNonNull(whiteList, "The white list cannot be null."));
+        String errorMsg = "The white list cannot be null.";
+        Set<Method> nonNullSetList = new HashSet<>(Objects.requireNonNull(whiteList, errorMsg));
         this.mutedWhitelist = Collections.unmodifiableSet(nonNullSetList);
     }
 

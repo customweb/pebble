@@ -20,25 +20,20 @@ public class MethodHandlerTest {
     @Test
     public void testWhiteListAndWhiteListIntoConstructor() throws PebbleException, IOException, NoSuchMethodException {
 
-        // Create Dummy WhiteList with Identifier
+        // Create Dummy WhiteList with Method
         Set<Method> whiteList = new HashSet<>();
         Method method = PebbleEngine.class.getMethod("getTemplate", String.class);
         whiteList.add(method);
         WhiteListObject whiteListObject = new WhiteListObject(whiteList);
-      
-        whiteList.add(PebbleEngine.class.getMethod("getExecutorService"));
 
-
-        // Pass Properties into Constructor Builder
+        // Pass Properties into Builder
         PebbleEngine.Builder builder = new PebbleEngine.Builder();
         builder.loader(new StringLoader());
         builder.strictVariables(false);
-        builder.whiteList(null);
+        builder.whiteList(whiteListObject);
         PebbleEngine pebbleEngine = builder.build();
-        
-        
-        
-        // Setup
+
+        // Set Up Test
         String source = "{% for user in users %}{% if loop.first %}[{{ loop.length }}]{% endif %}{% if loop.last %}[{{ loop.length }}]{% endif %}{{ loop.index }}{{ loop.revindex }}{{ user.username }}{% endfor %}";
         PebbleTemplate template = pebbleEngine.getTemplate(source);
         Map<String, Object> context = new HashMap<>();
@@ -49,26 +44,19 @@ public class MethodHandlerTest {
         context.put("users", users);
         Writer writer = new StringWriter();
         template.evaluate(writer, context);
-        
-        System.out.println( pebbleEngine.getWhiteListObject());
-        
-        // Test
+
+        // Run Test
         assertEquals("[3]02Alex11Bob[3]20John", writer.toString());
         assertEquals(1, pebbleEngine.getWhiteListObject().getWhiteList().size());
     }
 
-
-    public class UserObject {
-
+    public static class UserObject {
         private final String username;
 
         public UserObject(String username) {
             this.username = username;
         }
-
-        public String getUsername() {
-            return username;
-        }
+        public String getUsername() { return username; }
     }
 
 }
