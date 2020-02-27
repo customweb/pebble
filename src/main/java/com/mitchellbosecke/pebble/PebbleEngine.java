@@ -104,12 +104,7 @@ public class PebbleEngine {
         this.templateCache = templateCache;
         this.extensionRegistry = new ExtensionRegistry(extensions);
         this.objectPrinter = new ObjectPrinter(this.extensionRegistry);
-        if (whiteList == null) {
-        	 this.whiteList = new WhiteListObject(new HashSet<Method>(), WhiteListObject.DEFAULT_BEHAVIOR);
-        }
-        else {
-        	 this.whiteList = whiteList;
-        }
+        this.whiteList = whiteList;
        
     }
 
