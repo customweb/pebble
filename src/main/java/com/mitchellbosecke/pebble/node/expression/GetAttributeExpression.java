@@ -312,12 +312,13 @@ public class GetAttributeExpression implements Expression<Object> {
      * @return
      */
     private Method findMethod(Class<?> clazz, String name, Class<?>[] requiredTypes) throws ClassAccessException {
-        if (name.equalsIgnoreCase("getClass")) {
-            throw new ClassAccessException(lineNumber, filename);
-        }
 
         Method method = null;
         Method[] candidates = clazz.getMethods();
+
+        if (name.equalsIgnoreCase("getClass")) {
+            throw new ClassAccessException(lineNumber, filename);
+        }
 
         for (Method candidate : candidates) {
             if (!candidate.getName().equalsIgnoreCase(name)) {
@@ -345,18 +346,14 @@ public class GetAttributeExpression implements Expression<Object> {
         }
 
         if (method != null) {
-            if (unsafeMethod(method)){
+            if (this.methodHandler.isUnsafeMethod(method)){
                 throw new ClassAccessException(lineNumber, filename);
             } else {
-                logger.info("Whitelist added for: "+ method.getName());
+                logger.info("WHITELISTED: "+ method.toString());
             }
         }
 
         return method;
-    }
-
-    private boolean unsafeMethod(Method method) {
-        return this.methodHandler.isUnsafeMethod(method);
     }
 
     /**
