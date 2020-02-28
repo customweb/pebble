@@ -458,7 +458,8 @@ public class PebbleEngine {
         /**
          * Attaches a properties file to the builder params
          *
-         * @param  jsonArray to be converted
+         * @param  jsonArray to be parsed
+         * @return WhiteListObject in Builder
          */
         public Builder whiteList(JSONArray jsonArray) {
             this.whiteList = new WhiteListObject(jsonArray);
