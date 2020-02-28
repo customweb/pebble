@@ -8,7 +8,7 @@ import java.util.*;
 public class WhiteListObject {
 
     private final Set<Method> mutedWhitelist;
-    private final JSONArray jsonArray;
+    private final JSONArray mutedJsonArray;
 
     public Set<Method> getWhiteList() { return mutedWhitelist; }
 
@@ -19,7 +19,7 @@ public class WhiteListObject {
 
         // Make Immutable Params
         JSONObject jsonObject = new JSONObject().put("wrapper",jsonArray);
-        this.jsonArray = jsonObject.getJSONArray("wrapper");
+        this.mutedJsonArray = jsonObject.getJSONArray("wrapper");
 
         // Execute conversion
         try {
@@ -31,10 +31,10 @@ public class WhiteListObject {
 
     private Set<Method> parseJsonArrayToMethodSet() throws NoSuchMethodException, ClassNotFoundException {
         Set<Method> whitelist;
-            Set<Method> set = new HashSet<>(jsonArray.length() * 4 / 3, 1f);
+            Set<Method> set = new HashSet<>(mutedJsonArray.length() * 4 / 3, 1f);
             Map<String, Class> primitiveClasses = getPrimitiveClasses();
-            for(int i =0;i<jsonArray.length();i++){
-                set.add(parseJsonArrayToMethodSetDetails(String.valueOf(jsonArray.get(i)), primitiveClasses));
+            for(int i = 0; i< mutedJsonArray.length(); i++){
+                set.add(parseJsonArrayToMethodSetDetails(String.valueOf(mutedJsonArray.get(i)), primitiveClasses));
             }
             whitelist = Collections.unmodifiableSet(set);
         return Collections.unmodifiableSet(whitelist);
