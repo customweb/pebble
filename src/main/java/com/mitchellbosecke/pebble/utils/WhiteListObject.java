@@ -13,6 +13,8 @@ public class WhiteListObject {
     public Set<Method> getWhiteList() { return mutedWhitelist; }
 
     public WhiteListObject(JSONArray jsonArray){
+    	// FIXME The jsonArray should not be an instance variable as it is going to be used once the constructor has finished its execution.
+    	// --> I would really make a factory method for this.
 
         // Check Null
         Objects.requireNonNull(jsonArray, "The jsonArray can not be null.");
